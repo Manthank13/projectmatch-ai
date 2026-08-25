@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { useData } from '../../context/DataContext';
+import { supabase } from '../../lib/supabase';
 import { AuthLayout } from './AuthLayout';
 
 interface SignUpPageProps {
@@ -50,7 +51,12 @@ export const SignUpPage: React.FC<SignUpPageProps> = ({ onNavigate }) => {
 
     const success = await signup(fullName, email, password, department, campus);
     if (success) {
-      onNavigate('verify-email');
+      const { data: sessionData } = await supabase.auth.getSession();
+      if (sessionData?.session) {
+        onNavigate('architect');
+      } else {
+        onNavigate('verify-email');
+      }
     }
   };
 

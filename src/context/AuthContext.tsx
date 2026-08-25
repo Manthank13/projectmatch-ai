@@ -189,6 +189,23 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }
 
       if (data.user) {
+        try {
+          const profile = await getProfile(data.user.id);
+          if (!profile) {
+            const meta = data.user.user_metadata || {};
+            await upsertProfile({
+              id: data.user.id,
+              full_name: meta.full_name || meta.name || email.split('@')[0],
+              email: email.trim(),
+              department: meta.department || 'Computer Science & Engineering',
+              campus: meta.campus || 'Main Campus (Kattankulathur)',
+              avatar_url: meta.avatar_url || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80'
+            });
+          }
+        } catch (profileErr) {
+          console.warn('Profile sync warning:', profileErr);
+        }
+
         await loadUserFromSession(data.user);
         setIsLoading(false);
         return true;
@@ -197,7 +214,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setIsLoading(false);
       return false;
     } catch (err: any) {
-      setError(err?.message || 'Network error occurred during authentication.');
+      const rawError = err?.message || String(err);
+      if (rawError.includes('Failed to fetch') || rawError.includes('NetworkError')) {
+        setError('Unable to connect to Supabase. Please check your internet connection or project configuration.');
+      } else {
+        setError(rawError);
+      }
       setIsLoading(false);
       return false;
     }
@@ -261,17 +283,24 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }
 
       if (data.user) {
-        // Create initial Postgres profile record
-        await upsertProfile({
-          id: data.user.id,
-          full_name: fullName.trim(),
-          email: email.trim(),
-          department: cleanDepartment,
-          campus: cleanCampus,
-          avatar_url: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80'
-        });
+        // If session is active (e.g. email confirmation turned off), upsert profile record
+        if (data.session) {
+          try {
+            await upsertProfile({
+              id: data.user.id,
+              full_name: fullName.trim(),
+              email: email.trim(),
+              department: cleanDepartment,
+              campus: cleanCampus,
+              avatar_url: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80'
+            });
+          } catch (profileErr) {
+            console.warn('Could not insert profile record:', profileErr);
+          }
 
-        await loadUserFromSession(data.user);
+          await loadUserFromSession(data.user);
+        }
+
         setIsLoading(false);
         return true;
       }
@@ -279,7 +308,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setIsLoading(false);
       return true;
     } catch (err: any) {
-      setError(err?.message || 'Failed to register account.');
+      const rawError = err?.message || String(err);
+      if (rawError.includes('Failed to fetch') || rawError.includes('NetworkError')) {
+        setError('Unable to connect to Supabase. Please check your internet connection or project configuration.');
+      } else {
+        setError(rawError);
+      }
       setIsLoading(false);
       return false;
     }
