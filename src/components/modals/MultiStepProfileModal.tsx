@@ -197,9 +197,12 @@ export const MultiStepProfileModal: React.FC<MultiStepProfileModalProps> = ({
     setNewAchievement('');
   };
 
+  const [validationError, setValidationError] = useState<string | null>(null);
+
   const handleSubmit = () => {
+    setValidationError(null);
     if (!name.trim() || !role.trim()) {
-      alert('Please fill in your Name and Role.');
+      setValidationError('Please fill in your Full Name and Preferred Role.');
       setCurrentStep(1);
       return;
     }
@@ -215,7 +218,7 @@ export const MultiStepProfileModal: React.FC<MultiStepProfileModalProps> = ({
       const studentPayload: Omit<Student, 'id'> = {
         name: name.trim(),
         studentIdNumber: studentIdNumber.trim() || 'RA2311003010456',
-        contactEmail: contactEmail.trim() || `${name.toLowerCase().replace(/\s+/g, '.')}@srmgrid.synth`,
+        contactEmail: contactEmail.trim() || `${name.toLowerCase().replace(/\s+/g, '.')}@srm.edu.in`,
         year,
         department,
         campus,
@@ -223,6 +226,7 @@ export const MultiStepProfileModal: React.FC<MultiStepProfileModalProps> = ({
         availabilityHours: Number(availabilityHours),
         personalityLine: personalityLine.trim() || 'Ready to build impactful projects with a great squad.',
         bio: bio.trim() || `${name} is an active student researcher and developer at ${department}, ${campus}.`,
+        avatarUrl: profileImage || avatar,
         avatar,
         profileImage,
         campusZone: 'AI LAB',
@@ -242,7 +246,9 @@ export const MultiStepProfileModal: React.FC<MultiStepProfileModalProps> = ({
         skills: skillsList.length > 0 ? skillsList : [
           { name: 'Core Problem Solving', score: 9, category: primaryDomain },
           { name: 'Team Collaboration', score: 9, category: 'PRODUCT' }
-        ]
+        ],
+        isUserCreated: true,
+        isSyntheticDemo: false
       };
 
       if (initialStudent) {
@@ -369,6 +375,12 @@ export const MultiStepProfileModal: React.FC<MultiStepProfileModalProps> = ({
             {/* STEP 1: ABOUT YOU */}
             {currentStep === 1 && (
               <div className="space-y-6 animate-fadeIn">
+                {validationError && (
+                  <div className="p-3.5 rounded-2xl bg-error-container border border-error/40 text-on-error-container text-xs font-headline flex items-center gap-2.5 animate-fadeIn">
+                    <span className="material-symbols-outlined text-base text-error flex-shrink-0">error</span>
+                    <span>{validationError}</span>
+                  </div>
+                )}
                 <ImageUpload
                   profileImage={profileImage}
                   avatar={avatar}
@@ -417,7 +429,7 @@ export const MultiStepProfileModal: React.FC<MultiStepProfileModalProps> = ({
                   <GlassDropdown
                     label="Department"
                     value={department}
-                    options={departments.map(d => ({ value: d.name, label: d.name, sublabel: d.code }))}
+                    options={departments.map(d => ({ value: d.name || '', label: d.name || '', sublabel: d.code || '' }))}
                     onChange={setDepartment}
                     searchable
                     icon="domain"
@@ -426,7 +438,7 @@ export const MultiStepProfileModal: React.FC<MultiStepProfileModalProps> = ({
                   <GlassDropdown
                     label="Campus Hub"
                     value={campus}
-                    options={campuses.map(c => ({ value: c.name, label: c.name }))}
+                    options={campuses.map(c => ({ value: c.name || '', label: c.name || '' }))}
                     onChange={setCampus}
                     icon="apartment"
                   />

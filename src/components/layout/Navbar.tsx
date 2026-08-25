@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useData } from '../../context/DataContext';
-import { ThemeMode } from '../../types';
+import { useAuth } from '../../context/AuthContext';
 
 interface NavbarProps {
   activeTab: 'architect' | 'talent' | 'projects' | 'campus' | 'how-it-works';
@@ -10,6 +10,7 @@ interface NavbarProps {
   onOpenAddDepartment: () => void;
   onOpenAddCampus: () => void;
   onOpenAdmin: () => void;
+  onNavigateAuth?: (route: string) => void;
 }
 
 export const Navbar: React.FC<NavbarProps> = ({
@@ -19,9 +20,12 @@ export const Navbar: React.FC<NavbarProps> = ({
   onOpenAddProject,
   onOpenAddDepartment,
   onOpenAddCampus,
-  onOpenAdmin
+  onOpenAdmin,
+  onNavigateAuth
 }) => {
   const { theme, setTheme } = useData();
+  const { user, isAuthenticated, logout } = useAuth();
+
   const [showCreateMenu, setShowCreateMenu] = useState(false);
   const [showProfileMenu, setShowProfileMenu] = useState(false);
   const [showMobileNav, setShowMobileNav] = useState(false);
@@ -39,6 +43,8 @@ export const Navbar: React.FC<NavbarProps> = ({
     else if (theme === 'light') setTheme('system');
     else setTheme('dark');
   };
+
+  const userAvatar = user?.avatarUrl || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80';
 
   return (
     <header className="sticky top-5 z-40 px-4 sm:px-8 max-w-7xl mx-auto w-full transition-all duration-300">
@@ -93,15 +99,15 @@ export const Navbar: React.FC<NavbarProps> = ({
         </nav>
 
         {/* Right Actions */}
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2.5">
           {/* + CREATE Glass Command Button */}
           <div className="relative">
             <button
               onClick={() => setShowCreateMenu(!showCreateMenu)}
-              className="flex items-center gap-1.5 px-4 py-2 rounded-full bg-white/[0.04] hover:bg-cyan-500/10 border border-outline-variant hover:border-cyan-400/50 text-on-surface hover:text-cyan-300 font-headline text-xs font-bold transition-all shadow-sm hover:shadow-cyan-glow"
+              className="flex items-center gap-1.5 px-3.5 sm:px-4 py-2 rounded-full bg-white/[0.04] hover:bg-cyan-500/10 border border-outline-variant hover:border-cyan-400/50 text-on-surface hover:text-cyan-300 font-headline text-xs font-bold transition-all shadow-sm"
             >
               <span className="material-symbols-outlined text-cyan-400 text-sm font-bold">add</span>
-              <span>CREATE</span>
+              <span className="hidden sm:inline">CREATE</span>
             </button>
 
             {showCreateMenu && (
@@ -120,7 +126,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                     </span>
                     <div>
                       <span className="block text-on-surface group-hover:text-cyan-300">+ Talent Profile</span>
-                      <span className="block text-[10px] font-normal text-on-surface-variant">7-step profile builder</span>
+                      <span className="block text-[10px] font-normal text-on-surface-variant">Add yourself to matrix</span>
                     </div>
                   </button>
 
@@ -176,62 +182,78 @@ export const Navbar: React.FC<NavbarProps> = ({
             {theme === 'dark' ? (
               <span className="material-symbols-outlined text-cyan-400 text-sm">dark_mode</span>
             ) : theme === 'light' ? (
-              <span className="material-symbols-outlined text-amber-400 text-sm">light_mode</span>
+              <span className="material-symbols-outlined text-amber-500 text-sm">light_mode</span>
             ) : (
               <span className="material-symbols-outlined text-violet-400 text-sm">settings_brightness</span>
             )}
           </button>
 
-          {/* Profile Button with Glass Halo */}
-          <div className="relative">
-            <button
-              onClick={() => setShowProfileMenu(!showProfileMenu)}
-              className="relative w-9 h-9 rounded-full overflow-hidden border border-cyan-400/40 hover:border-cyan-400 hover:scale-105 transition-all shadow-cyan-glow flex-shrink-0"
-              title="Talent Network Menu"
-            >
-              <img
-                src="https://lh3.googleusercontent.com/aida-public/AB6AXuB8pvIXteauq5mUsiXl24rVdfe1VtldA80FOcjvVsQZrVq-paEYSz9t8vVgTCRp15sJgUj1RNJWZNN8wQVokJ9FtSVKnqykR8AKo3Ivk37cr_XWDYYTZLs1yifkxU0NfnSjFkAL_q5ssMyWWffmOFiT0hBSj8gI7WzYGf6kfkqiNg_2jKguGyc5dw1U_h6VnTBoki9A6RAlZGNIr64UhClkrgL3geIOLNkX9E8GPHiMItNnKa0QmHbM"
-                alt="Profile"
-                className="w-full h-full object-cover"
-              />
-            </button>
-
-            {showProfileMenu && (
-              <>
-                <div 
-                  className="fixed inset-0 z-40" 
-                  onClick={() => setShowProfileMenu(false)}
+          {/* Authentication & Profile Menu */}
+          {isAuthenticated && user ? (
+            <div className="relative">
+              <button
+                onClick={() => setShowProfileMenu(!showProfileMenu)}
+                className="relative w-9 h-9 rounded-full overflow-hidden border border-cyan-400/50 hover:border-cyan-400 hover:scale-105 transition-all shadow-cyan-glow flex-shrink-0"
+                title={`${user.fullName} (${user.email})`}
+              >
+                <img
+                  src={userAvatar}
+                  alt={user.fullName}
+                  className="w-full h-full object-cover"
                 />
-                <div className="absolute right-0 mt-3 w-52 glass-dropdown rounded-3xl p-2 z-50 animate-fadeIn font-headline text-xs font-bold">
-                  <button
-                    onClick={() => { setShowProfileMenu(false); onOpenAddStudent(); }}
-                    className="w-full flex items-center gap-2.5 p-2.5 rounded-2xl hover:bg-white/[0.06] text-on-surface text-left"
-                  >
-                    <span className="material-symbols-outlined text-cyan-400 text-base">badge</span>
-                    <span>View / Edit Profile</span>
-                  </button>
+                <span className="absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full bg-mint-accent border border-space-black" />
+              </button>
 
-                  <button
-                    onClick={() => { setShowProfileMenu(false); onOpenAdmin(); }}
-                    className="w-full flex items-center gap-2.5 p-2.5 rounded-2xl hover:bg-white/[0.06] text-on-surface text-left"
-                  >
-                    <span className="material-symbols-outlined text-violet-400 text-base">monitoring</span>
-                    <span>Admin & Telemetry</span>
-                  </button>
+              {showProfileMenu && (
+                <>
+                  <div 
+                    className="fixed inset-0 z-40" 
+                    onClick={() => setShowProfileMenu(false)}
+                  />
+                  <div className="absolute right-0 mt-3 w-56 glass-dropdown rounded-3xl p-2.5 z-50 animate-fadeIn font-headline text-xs font-bold">
+                    <div className="px-3 py-2 border-b border-outline-variant/40 mb-1">
+                      <span className="block text-on-surface font-extrabold truncate">{user.fullName}</span>
+                      <span className="block text-[10px] text-on-surface-variant font-normal truncate">{user.email}</span>
+                    </div>
 
-                  <div className="my-1 border-t border-outline-variant/30" />
+                    <button
+                      onClick={() => { setShowProfileMenu(false); onOpenAddStudent(); }}
+                      className="w-full flex items-center gap-2.5 p-2.5 rounded-2xl hover:bg-white/[0.06] text-on-surface text-left"
+                    >
+                      <span className="material-symbols-outlined text-cyan-400 text-base">badge</span>
+                      <span>Edit My Profile</span>
+                    </button>
 
-                  <button
-                    onClick={() => { setShowProfileMenu(false); cycleTheme(); }}
-                    className="w-full flex items-center gap-2.5 p-2.5 rounded-2xl hover:bg-white/[0.06] text-on-surface text-left"
-                  >
-                    <span className="material-symbols-outlined text-on-surface-variant text-base">palette</span>
-                    <span>Theme: {theme.toUpperCase()}</span>
-                  </button>
-                </div>
-              </>
-            )}
-          </div>
+                    <button
+                      onClick={() => { setShowProfileMenu(false); onOpenAdmin(); }}
+                      className="w-full flex items-center gap-2.5 p-2.5 rounded-2xl hover:bg-white/[0.06] text-on-surface text-left"
+                    >
+                      <span className="material-symbols-outlined text-violet-400 text-base">monitoring</span>
+                      <span>Admin & Telemetry</span>
+                    </button>
+
+                    <div className="my-1 border-t border-outline-variant/30" />
+
+                    <button
+                      onClick={() => { setShowProfileMenu(false); logout(); }}
+                      className="w-full flex items-center gap-2.5 p-2.5 rounded-2xl hover:bg-error-container text-error text-left"
+                    >
+                      <span className="material-symbols-outlined text-base">logout</span>
+                      <span>Sign Out</span>
+                    </button>
+                  </div>
+                </>
+              )}
+            </div>
+          ) : (
+            <button
+              onClick={() => onNavigateAuth?.('login')}
+              className="px-4 py-2 rounded-full bg-gradient-to-r from-cyan-500 to-violet-600 hover:from-cyan-400 hover:to-violet-500 text-space-black font-headline text-xs font-extrabold shadow-cyan-glow hover:scale-105 active:scale-95 transition-all flex items-center gap-1.5"
+            >
+              <span className="material-symbols-outlined text-sm">login</span>
+              <span>SIGN IN</span>
+            </button>
+          )}
 
           {/* Mobile Menu Trigger */}
           <button
@@ -263,6 +285,18 @@ export const Navbar: React.FC<NavbarProps> = ({
               <span>{item.label}</span>
             </button>
           ))}
+          {!isAuthenticated && (
+            <button
+              onClick={() => {
+                setShowMobileNav(false);
+                onNavigateAuth?.('login');
+              }}
+              className="w-full text-left p-3 rounded-2xl flex items-center gap-2.5 text-cyan-400 font-extrabold border-t border-outline-variant/40 mt-2"
+            >
+              <span className="material-symbols-outlined text-base">login</span>
+              <span>Sign In to ProjectMatch</span>
+            </button>
+          )}
         </div>
       )}
     </header>

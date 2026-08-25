@@ -5,6 +5,8 @@ import { StudentModal } from './StudentModal';
 import { DeleteConfirmModal } from '../modals/DeleteConfirmModal';
 import { CampusNetworkGraph } from './CampusNetworkGraph';
 import { GlassDropdown } from '../common/GlassDropdown';
+import { ProfileLinks } from '../common/ProfileLinks';
+import { getStudentAvatar } from '../../utils/avatar';
 
 interface TalentMatrixViewProps {
   onOpenAddStudent: () => void;
@@ -118,13 +120,10 @@ export const TalentMatrixView: React.FC<TalentMatrixViewProps> = ({
 
   return (
     <div className="space-y-10 py-6 animate-fadeIn relative z-10">
-      {/* Background Subtle Mesh Grid */}
-      <div className="ambient-network-bg" />
-
       {/* Editorial Header Section */}
       <section className="flex flex-col lg:flex-row justify-between items-start lg:items-end gap-8 pt-4">
         <div className="max-w-3xl space-y-3">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-cyan-500/10 border border-cyan-400/20 text-cyan-300 text-xs font-headline font-bold">
+          <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-cyan-500/10 border border-cyan-400/20 text-cyan-300 text-xs font-headline font-bold">
             <span className="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-pulse shadow-cyan-glow" />
             <span>✦ SRM INNOVATION GRID TALENT INTELLIGENCE</span>
           </div>
@@ -151,7 +150,7 @@ export const TalentMatrixView: React.FC<TalentMatrixViewProps> = ({
             className="px-7 py-3.5 rounded-full bg-gradient-to-r from-cyan-500 to-violet-600 hover:from-cyan-400 hover:to-violet-500 text-space-black font-headline text-xs font-extrabold shadow-cyan-glow hover:scale-105 active:scale-95 transition-all flex items-center gap-2"
           >
             <span className="material-symbols-outlined text-base">person_add</span>
-            <span>+ JOIN THE NETWORK</span>
+            <span>+ ADD YOURSELF</span>
           </button>
 
           {onNavigateToArchitect && (
@@ -166,7 +165,7 @@ export const TalentMatrixView: React.FC<TalentMatrixViewProps> = ({
         </div>
       </section>
 
-      {/* Futuristic Live Network Statistics Row */}
+      {/* Live Network Statistics Row */}
       <section className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4 font-headline">
         <div className="p-4 sm:p-5 rounded-3xl glass-identity-card border border-outline-variant flex flex-col justify-between">
           <span className="text-[10px] sm:text-[11px] text-on-surface-variant font-bold uppercase tracking-wider">
@@ -221,7 +220,7 @@ export const TalentMatrixView: React.FC<TalentMatrixViewProps> = ({
       <section className="space-y-4">
         <div className="flex flex-col md:flex-row gap-4 items-center justify-between">
           {/* Horizontal Glass Filter Tabs */}
-          <div className="flex overflow-x-auto pb-1 gap-1.5 w-full md:w-auto no-scrollbar p-1 rounded-full bg-space-surface/70 border border-outline-variant">
+          <div className="flex overflow-x-auto pb-1 gap-1.5 w-full md:w-auto no-scrollbar p-1 rounded-full bg-surface/80 border border-outline-variant">
             {filters.map(filter => {
               const isActive = selectedFilter === filter;
               return (
@@ -281,7 +280,7 @@ export const TalentMatrixView: React.FC<TalentMatrixViewProps> = ({
             <GlassDropdown
               label="Campus Location"
               value={filterCampus}
-              options={['ALL', ...campuses.map(c => c.name)]}
+              options={['ALL', ...campuses.map(c => c.name || '')]}
               onChange={setFilterCampus}
               icon="apartment"
             />
@@ -289,7 +288,7 @@ export const TalentMatrixView: React.FC<TalentMatrixViewProps> = ({
             <GlassDropdown
               label="Department Cluster"
               value={filterDept}
-              options={['ALL', ...departments.map(d => d.name)]}
+              options={['ALL', ...departments.map(d => d.name || '')]}
               onChange={setFilterDept}
               searchable
               icon="domain"
@@ -310,10 +309,10 @@ export const TalentMatrixView: React.FC<TalentMatrixViewProps> = ({
         )}
       </section>
 
-      {/* Main Grid + Sidebar Layout */}
-      <div className="flex flex-col lg:flex-row gap-8 items-start">
-        {/* Candidates Grid */}
-        <div className="flex-grow w-full">
+      {/* Main Grid Layout: Talent Cards Grid + Aligned Topology Sidebar */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+        {/* Candidates Grid (8 cols on large screens) */}
+        <div className="lg:col-span-8 w-full">
           {filteredStudents.length === 0 ? (
             <div className="glass-identity-card rounded-3xl p-12 text-center flex flex-col items-center justify-center space-y-4">
               <div className="w-16 h-16 rounded-full bg-white/[0.04] border border-outline-variant flex items-center justify-center text-cyan-400">
@@ -339,27 +338,26 @@ export const TalentMatrixView: React.FC<TalentMatrixViewProps> = ({
               </button>
             </div>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
               {filteredStudents.map((student, index) => {
-                const photoSrc = student.profileImage || student.avatar;
-                const isRealPhoto = !!student.profileImage;
-                const links = student.professionalLinks || {};
+                const photoSrc = getStudentAvatar(student);
+                const isRealUser = !!student.isUserCreated;
                 const proofScore = student.proofOfWorkScore || 92;
 
                 return (
                   <div
                     key={student.id}
-                    style={{ animationDelay: `${index * 50}ms` }}
-                    className="glass-identity-card rounded-3xl p-6 flex flex-col justify-between relative group hover:-translate-y-1.5 transition-all duration-300"
+                    style={{ animationDelay: `${index * 40}ms` }}
+                    className="glass-identity-card rounded-3xl p-6 h-full flex flex-col justify-between relative group hover:-translate-y-1.5 transition-all duration-300"
                   >
                     <div>
                       {/* Top Bar: Profile Photo & Header */}
-                      <div className="flex items-start justify-between gap-3 mb-4">
-                        <div className="flex items-center gap-3.5">
+                      <div className="flex items-start justify-between gap-3 mb-3">
+                        <div className="flex items-center gap-3">
                           {/* Photo with Luminous Halo */}
                           <div
                             onClick={() => setSelectedStudent(student)}
-                            className="relative w-16 h-16 rounded-2xl overflow-hidden border border-cyan-400/40 shadow-cyan-glow cursor-pointer group-hover:scale-105 transition-transform bg-surface flex-shrink-0"
+                            className="relative w-14 h-14 rounded-2xl overflow-hidden border border-cyan-400/40 shadow-cyan-glow cursor-pointer group-hover:scale-105 transition-transform bg-surface flex-shrink-0"
                           >
                             <img
                               src={photoSrc}
@@ -367,22 +365,32 @@ export const TalentMatrixView: React.FC<TalentMatrixViewProps> = ({
                               className="w-full h-full object-cover"
                               loading="lazy"
                             />
-                            {isRealPhoto && (
-                              <span className="absolute bottom-0.5 right-0.5 w-3 h-3 bg-cyan-400 rounded-full border-2 border-space-black shadow-cyan-glow" title="Verified Photo" />
-                            )}
                           </div>
 
                           <div>
-                            <h3
-                              onClick={() => setSelectedStudent(student)}
-                              className="font-headline font-extrabold text-on-surface text-lg cursor-pointer hover:text-cyan-300 transition-colors truncate max-w-[140px]"
-                            >
-                              {student.name}
-                            </h3>
-                            <p className="text-xs font-headline font-bold text-cyan-400 truncate max-w-[140px]">
+                            <div className="flex items-center gap-1.5">
+                              <h3
+                                onClick={() => setSelectedStudent(student)}
+                                className="font-headline font-extrabold text-on-surface text-base cursor-pointer hover:text-cyan-300 transition-colors truncate max-w-[130px]"
+                              >
+                                {student.name}
+                              </h3>
+                              {/* Synthetic Demo vs Real User Badge */}
+                              {isRealUser ? (
+                                <span className="px-1.5 py-0.5 rounded-md bg-mint-accent/15 border border-mint-accent/30 text-mint-accent text-[9px] font-headline font-extrabold" title="Verified User Identity">
+                                  VERIFIED
+                                </span>
+                              ) : (
+                                <span className="px-1.5 py-0.5 rounded-md bg-white/10 border border-outline-variant text-on-surface-variant text-[9px] font-mono font-bold" title="Synthetic Benchmark Persona">
+                                  SYNTHETIC
+                                </span>
+                              )}
+                            </div>
+
+                            <p className="text-xs font-headline font-bold text-cyan-400 truncate max-w-[150px]">
                               {student.role}
                             </p>
-                            <span className="text-[10px] font-body text-on-surface-variant block mt-0.5 truncate max-w-[140px]">
+                            <span className="text-[10px] font-body text-on-surface-variant block truncate max-w-[150px]">
                               {student.department.split('-')[0]}
                             </span>
                           </div>
@@ -407,7 +415,7 @@ export const TalentMatrixView: React.FC<TalentMatrixViewProps> = ({
                         </div>
                       </div>
 
-                      {/* Proof of Work & Confidence Badge */}
+                      {/* Proof of Work & Availability Badge */}
                       <div className="flex items-center justify-between gap-2 mb-3 px-3 py-1.5 rounded-xl bg-white/[0.02] border border-outline-variant/40 text-xs font-headline">
                         <div className="flex items-center gap-1.5">
                           <div className="w-3.5 h-3.5 rounded-full border border-cyan-400 flex items-center justify-center circular-progress-glow">
@@ -422,12 +430,12 @@ export const TalentMatrixView: React.FC<TalentMatrixViewProps> = ({
                       </div>
 
                       {/* Personality One-Liner */}
-                      <p className="font-body text-xs text-on-surface-variant italic mb-4 min-h-[32px] line-clamp-2 px-1">
+                      <p className="font-body text-xs text-on-surface-variant italic mb-3 min-h-[32px] line-clamp-2 px-0.5">
                         "{student.personalityLine}"
                       </p>
 
-                      {/* Minimal Skill Capsules with Colored Domain Dots */}
-                      <div className="flex flex-wrap gap-1.5 mb-3">
+                      {/* Minimal Skill Capsules with Domain Dots */}
+                      <div className="flex flex-wrap gap-1.5 mb-3 min-h-[56px] items-start">
                         {student.skills.slice(0, 3).map(sk => (
                           <span
                             key={sk.name}
@@ -443,51 +451,14 @@ export const TalentMatrixView: React.FC<TalentMatrixViewProps> = ({
                         ))}
                       </div>
 
-                      {/* Social / Professional Online Links */}
-                      {(links.github || links.linkedin || links.portfolio) && (
-                        <div className="flex gap-2 pt-1 mb-2 text-on-surface-variant">
-                          {links.github && (
-                            <a
-                              href={links.github}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              onClick={e => e.stopPropagation()}
-                              className="p-1 rounded-lg hover:bg-white/[0.08] hover:text-cyan-300 transition-colors"
-                              title="Open GitHub Profile"
-                            >
-                              <span className="material-symbols-outlined text-sm">terminal</span>
-                            </a>
-                          )}
-                          {links.linkedin && (
-                            <a
-                              href={links.linkedin}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              onClick={e => e.stopPropagation()}
-                              className="p-1 rounded-lg hover:bg-white/[0.08] hover:text-violet-300 transition-colors"
-                              title="Open LinkedIn Profile"
-                            >
-                              <span className="material-symbols-outlined text-sm">work</span>
-                            </a>
-                          )}
-                          {links.portfolio && (
-                            <a
-                              href={links.portfolio}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              onClick={e => e.stopPropagation()}
-                              className="p-1 rounded-lg hover:bg-white/[0.08] hover:text-mint-accent transition-colors"
-                              title="Open Personal Portfolio"
-                            >
-                              <span className="material-symbols-outlined text-sm">language</span>
-                            </a>
-                          )}
-                        </div>
-                      )}
+                      {/* Professional Links Bar */}
+                      <div className="mb-2">
+                        <ProfileLinks links={student.professionalLinks} size="sm" />
+                      </div>
                     </div>
 
                     {/* Card Footer: View Profile Trigger */}
-                    <div className="pt-3 border-t border-outline-variant/40 flex items-center justify-between font-headline text-xs">
+                    <div className="pt-3 border-t border-outline-variant/40 flex items-center justify-between font-headline text-xs mt-2">
                       <span className="text-on-surface-variant text-[11px]">
                         {student.campus?.split('(')[0] || 'Main Campus'}
                       </span>
@@ -509,140 +480,59 @@ export const TalentMatrixView: React.FC<TalentMatrixViewProps> = ({
           )}
         </div>
 
-        {/* Sidebar: Connected Campus Nodes + Live Signals + Cross-Department */}
-        <aside className="w-full lg:w-80 flex-shrink-0 flex flex-col gap-6">
-          {/* Connected Campus Network Widget */}
-          <CampusNetworkGraph
-            selectedCategory={selectedFilter}
-            onSelectCategory={setSelectedFilter}
-          />
-
-          {/* Live Campus Signals Widget */}
-          <div className="glass-identity-card rounded-3xl p-6 space-y-4">
-            <div className="flex items-center justify-between">
-              <h3 className="font-headline font-bold text-on-surface flex items-center gap-2 text-xs uppercase tracking-wider">
-                <span className="material-symbols-outlined text-cyan-400 text-lg">sensors</span>
-                <span>LIVE CAMPUS SIGNALS</span>
-              </h3>
-              <span className="w-2 h-2 rounded-full bg-cyan-400 animate-pulse shadow-cyan-glow" />
-            </div>
-
-            <ul className="space-y-2.5 font-headline text-xs">
-              <li className="p-2.5 rounded-2xl glass-input flex items-center justify-between">
-                <div>
-                  <span className="text-[10px] text-on-surface-variant font-mono block">01</span>
-                  <span className="text-on-surface font-bold">LLM & RAG PIPELINES</span>
-                </div>
-                <span className="text-cyan-400 font-extrabold text-sm">+24%</span>
-              </li>
-
-              <li className="p-2.5 rounded-2xl glass-input flex items-center justify-between">
-                <div>
-                  <span className="text-[10px] text-on-surface-variant font-mono block">02</span>
-                  <span className="text-on-surface font-bold">BIO-MARINE AI ECOTOX</span>
-                </div>
-                <span className="text-violet-400 font-extrabold text-sm">+18%</span>
-              </li>
-
-              <li className="p-2.5 rounded-2xl glass-input flex items-center justify-between">
-                <div>
-                  <span className="text-[10px] text-on-surface-variant font-mono block">03</span>
-                  <span className="text-on-surface font-bold">SATELLITE TELEMETRY (SAR)</span>
-                </div>
-                <span className="text-mint-accent font-extrabold text-sm">+12%</span>
-              </li>
-
-              <li className="p-2.5 rounded-2xl glass-input flex items-center justify-between">
-                <div>
-                  <span className="text-[10px] text-on-surface-variant font-mono block">04</span>
-                  <span className="text-on-surface font-bold">ROS2 SLAM ODOMETRY</span>
-                </div>
-                <span className="text-pink-400 font-extrabold text-sm">+15%</span>
-              </li>
-            </ul>
-
-            <div className="pt-2 text-center">
-              <span className="text-[10px] font-headline text-on-surface-variant uppercase tracking-wider">
-                LIVE • SYNTHETIC DEMO INDEX
+        {/* Topology Panel (4 cols on large screens) */}
+        <div className="lg:col-span-4 w-full sticky top-24 space-y-6">
+          <div className="glass-identity-card rounded-3xl p-6 border border-cyan-400/30">
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center gap-2">
+                <span className="material-symbols-outlined text-cyan-400 text-lg font-bold">hub</span>
+                <h3 className="font-headline font-extrabold text-on-surface text-base">
+                  Talent Topology
+                </h3>
+              </div>
+              <span className="px-2 py-0.5 rounded-full bg-cyan-500/10 text-cyan-400 text-[10px] font-mono font-bold">
+                LIVE DYNAMICS
               </span>
             </div>
-          </div>
 
-          {/* Cross-Department Discovery Spotlight */}
-          <div className="glass-identity-card rounded-3xl p-6 bg-gradient-to-br from-cyan-500/10 via-space-surface to-violet-500/10 border border-cyan-400/30 space-y-3">
-            <div className="flex items-center gap-2 text-cyan-400 text-xs font-headline font-bold uppercase">
-              <span className="material-symbols-outlined text-sm">hub</span>
-              <span>LOOK OUTSIDE YOUR DEPT</span>
-            </div>
-
-            <h4 className="font-headline font-extrabold text-on-surface text-base leading-snug">
-              Interdisciplinary Squad Discovery
-            </h4>
-
-            <p className="font-body text-xs text-on-surface-variant leading-relaxed">
-              Teams with members from 2+ departments achieve <strong>40% higher problem coverage</strong> in hackathons.
+            <p className="text-xs font-body text-on-surface-variant mb-4 leading-relaxed">
+              Interactive multi-disciplinary talent clustering across {campuses.length} campuses and {departments.length} departments.
             </p>
 
-            <div className="space-y-1.5 text-xs font-headline pt-1">
-              <div className="p-2 rounded-xl bg-white/[0.03] border border-outline-variant flex items-center justify-between">
-                <span className="text-on-surface font-bold">CSE + BIOTECH</span>
-                <span className="text-cyan-400 text-[10px]">AI + Biology</span>
-              </div>
-              <div className="p-2 rounded-xl bg-white/[0.03] border border-outline-variant flex items-center justify-between">
-                <span className="text-on-surface font-bold">DESIGN + AI LAB</span>
-                <span className="text-violet-400 text-[10px]">HUD + Neural</span>
-              </div>
+            <div className="rounded-2xl overflow-hidden border border-outline-variant/40 bg-space-surface/40 min-h-[300px]">
+              <CampusNetworkGraph
+                selectedCategory={selectedFilter}
+                onSelectCategory={setSelectedFilter}
+              />
             </div>
-
-            <button
-              onClick={onOpenAddProject}
-              className="w-full py-2.5 bg-gradient-to-r from-cyan-500/20 to-violet-500/20 hover:from-cyan-500/30 hover:to-violet-500/30 border border-cyan-400/40 text-cyan-300 rounded-xl font-headline text-xs font-bold transition-all shadow-sm"
-            >
-              + POST PROJECT BRIEF
-            </button>
           </div>
-        </aside>
+        </div>
       </div>
 
-      {/* Floating AI Recommendation Pill CTA */}
-      {onNavigateToArchitect && (
-        <div className="fixed bottom-6 right-6 z-30">
-          <button
-            onClick={onNavigateToArchitect}
-            className="px-6 py-3 rounded-full bg-gradient-to-r from-cyan-500 via-violet-600 to-cyan-400 text-space-black font-headline text-xs font-extrabold shadow-cyan-glow hover:scale-105 active:scale-95 transition-all flex items-center gap-2"
-          >
-            <span className="material-symbols-outlined text-base animate-spin text-space-black">
-              auto_awesome
-            </span>
-            <span>✦ FIND MY SQUAD</span>
-          </button>
-        </div>
-      )}
-
-      {/* Full Student Dossier Modal */}
+      {/* Student Profile Modal */}
       <StudentModal
         student={selectedStudent}
         onClose={() => setSelectedStudent(null)}
-        onEditStudent={onEditStudent}
-        onDeleteStudent={s => setStudentToDelete(s)}
+        onEditStudent={student => {
+          setSelectedStudent(null);
+          onEditStudent(student);
+        }}
       />
 
       {/* Delete Confirmation Modal */}
-      <DeleteConfirmModal
-        isOpen={!!studentToDelete}
-        onClose={() => setStudentToDelete(null)}
-        onConfirm={() => {
-          if (studentToDelete) {
+      {studentToDelete && (
+        <DeleteConfirmModal
+          isOpen={true}
+          title="Remove Candidate"
+          message={`Are you sure you want to remove ${studentToDelete.name} from the active campus talent pool?`}
+          itemName={studentToDelete.name}
+          onConfirm={() => {
             deleteStudent(studentToDelete.id);
-            if (selectedStudent?.id === studentToDelete.id) {
-              setSelectedStudent(null);
-            }
-          }
-        }}
-        title="Remove Candidate from Talent Grid?"
-        itemName={studentToDelete?.name || ''}
-        message="This will permanently delete this student record from the talent matrix and recommendation engine pool."
-      />
+            setStudentToDelete(null);
+          }}
+          onClose={() => setStudentToDelete(null)}
+        />
+      )}
     </div>
   );
 };

@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { DataProvider, useData } from './context/DataContext';
+import { AuthProvider, useAuth } from './context/AuthContext';
 import { Navbar } from './components/layout/Navbar';
 import { Footer } from './components/layout/Footer';
 import { HeroInput } from './components/architect/HeroInput';
@@ -15,14 +16,60 @@ import { ProjectFormModal } from './components/modals/ProjectFormModal';
 import { DepartmentModal } from './components/modals/DepartmentModal';
 import { CampusModal } from './components/modals/CampusModal';
 import { AdminControlModal } from './components/modals/AdminControlModal';
+
+// Auth Pages
+import { LoginPage } from './components/auth/LoginPage';
+import { SignUpPage } from './components/auth/SignUpPage';
+import { ForgotPasswordPage } from './components/auth/ForgotPasswordPage';
+import { ResetPasswordPage } from './components/auth/ResetPasswordPage';
+import { VerifyEmailPage } from './components/auth/VerifyEmailPage';
+
 import { recommendTeamAI } from './services/aiService';
 import { Student, ProjectArchetype, Department, Campus, TeamArchitectResult } from './types';
 import { playChime, playSuccess, playWhoosh } from './utils/sound';
 
+type AppRoute = 'architect' | 'talent' | 'projects' | 'campus' | 'how-it-works' | 'login' | 'signup' | 'forgot-password' | 'reset-password' | 'verify-email';
+
 const MainApp: React.FC = () => {
   const { students, projects } = useData();
+  const { isAuthenticated } = useAuth();
 
-  const [activeTab, setActiveTab] = useState<'architect' | 'talent' | 'projects' | 'campus' | 'how-it-works'>('architect');
+  // Route state initialized from pathname
+  const [currentRoute, setCurrentRoute] = useState<AppRoute>(() => {
+    const path = window.location.pathname.replace(/^\//, '').toLowerCase();
+    if (path === 'login') return 'login';
+    if (path === 'signup') return 'signup';
+    if (path === 'forgot-password') return 'forgot-password';
+    if (path === 'reset-password') return 'reset-password';
+    if (path === 'verify-email') return 'verify-email';
+    if (path === 'talent') return 'talent';
+    if (path === 'projects') return 'projects';
+    if (path === 'campus') return 'campus';
+    if (path === 'how-it-works') return 'how-it-works';
+    return 'architect';
+  });
+
+  // Sync browser History API
+  const navigateTo = (route: string) => {
+    const validRoute = route as AppRoute;
+    setCurrentRoute(validRoute);
+    window.history.pushState(null, '', `/${validRoute === 'architect' ? '' : validRoute}`);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  useEffect(() => {
+    const handlePopState = () => {
+      const path = window.location.pathname.replace(/^\//, '').toLowerCase();
+      if (path === 'login' || path === 'signup' || path === 'forgot-password' || path === 'reset-password' || path === 'verify-email' || path === 'talent' || path === 'projects' || path === 'campus' || path === 'how-it-works') {
+        setCurrentRoute(path as AppRoute);
+      } else {
+        setCurrentRoute('architect');
+      }
+    };
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
+  }, []);
+
   const [prompt, setPrompt] = useState(
     "We're building an AI platform that detects ocean pollution using satellite and environmental data."
   );
@@ -58,9 +105,7 @@ const MainApp: React.FC = () => {
     setIsAnalyzing(true);
     setAnalysisResult(null);
     setErrorMessage(null);
-    setActiveTab('architect');
-
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    navigateTo('architect');
 
     try {
       const realResult = await recommendTeamAI(textToAnalyze, students, projects);
@@ -79,112 +124,155 @@ const MainApp: React.FC = () => {
     handleArchitect(proj.description);
   };
 
+  const isAuthRoute = ['login', 'signup', 'forgot-password', 'reset-password', 'verify-email'].includes(currentRoute);
+
   return (
     <div className="min-h-screen flex flex-col bg-background text-on-background transition-colors duration-300 font-body relative">
       {/* Ambient background mesh */}
       <div className="ambient-network-bg" />
 
-      {/* Floating Glass Capsule Navigation */}
-      <Navbar
-        activeTab={activeTab}
-        setActiveTab={setActiveTab}
-        onOpenAddStudent={() => { setEditingStudent(null); setIsStudentFormOpen(true); }}
-        onOpenAddProject={() => { setEditingProject(null); setIsProjectFormOpen(true); }}
-        onOpenAddDepartment={() => { setEditingDept(null); setIsDeptFormOpen(true); }}
-        onOpenAddCampus={() => { setEditingCampus(null); setIsCampusFormOpen(true); }}
-        onOpenAdmin={() => setIsAdminOpen(true)}
-      />
+      {/* Render Authentication Routes */}
+      {currentRoute === 'login' && (
+        <LoginPage
+          onNavigate={navigateTo}
+          onSuccess={() => navigateTo('architect')}
+        />
+      )}
 
-      {/* Main Content Area */}
-      <main className="flex-1 w-full max-w-7xl mx-auto px-4 sm:px-8 pt-4 pb-16 relative z-10">
-        {activeTab === 'architect' && (
-          <>
-            {errorMessage && (
-              <div className="max-w-2xl mx-auto my-6 p-6 rounded-3xl bg-error-container border border-error text-on-error-container space-y-3 animate-fadeIn">
-                <div className="flex items-center gap-3">
-                  <span className="material-symbols-outlined text-3xl text-error">error</span>
-                  <div>
-                    <h3 className="font-headline font-extrabold text-base">
-                      AI CONNECTION ERROR
-                    </h3>
-                    <p className="text-xs font-body opacity-90">
-                      {errorMessage}
-                    </p>
-                  </div>
-                </div>
-                <div className="flex items-center justify-end gap-3 pt-2">
-                  <button
-                    onClick={() => setErrorMessage(null)}
-                    className="px-4 py-1.5 rounded-full hover:bg-white/10 text-xs font-headline font-bold"
-                  >
-                    Dismiss
-                  </button>
-                  <button
-                    onClick={() => handleArchitect(prompt)}
-                    className="px-5 py-1.5 rounded-full bg-error text-white font-headline text-xs font-extrabold shadow-sm hover:scale-105"
-                  >
-                    Retry Analysis
-                  </button>
-                </div>
-              </div>
-            )}
+      {currentRoute === 'signup' && (
+        <SignUpPage
+          onNavigate={navigateTo}
+        />
+      )}
 
-            {isAnalyzing ? (
-              <AnalysisSequence onComplete={() => {}} />
-            ) : analysisResult ? (
-              <ArchitectDashboard
-                result={analysisResult}
-                onReArchitect={() => {
-                  setAnalysisResult(null);
-                  playChime();
-                }}
-                onSelectStudent={s => setStudentModalTarget(s)}
-              />
-            ) : (
-              <HeroInput
-                prompt={prompt}
-                setPrompt={setPrompt}
-                onArchitect={handleArchitect}
-                onExploreTalent={() => setActiveTab('talent')}
-                isAnalyzing={isAnalyzing}
-              />
-            )}
-          </>
-        )}
+      {currentRoute === 'forgot-password' && (
+        <ForgotPasswordPage
+          onNavigate={navigateTo}
+        />
+      )}
 
-        {activeTab === 'talent' && (
-          <TalentMatrixView
+      {currentRoute === 'reset-password' && (
+        <ResetPasswordPage
+          onNavigate={navigateTo}
+        />
+      )}
+
+      {currentRoute === 'verify-email' && (
+        <VerifyEmailPage
+          onNavigate={navigateTo}
+        />
+      )}
+
+      {/* Render Main Application Routes */}
+      {!isAuthRoute && (
+        <>
+          {/* Floating Glass Capsule Navigation */}
+          <Navbar
+            activeTab={currentRoute as any}
+            setActiveTab={t => navigateTo(t)}
             onOpenAddStudent={() => { setEditingStudent(null); setIsStudentFormOpen(true); }}
             onOpenAddProject={() => { setEditingProject(null); setIsProjectFormOpen(true); }}
-            onEditStudent={s => { setEditingStudent(s); setIsStudentFormOpen(true); }}
-            onNavigateToArchitect={() => setActiveTab('architect')}
-          />
-        )}
-
-        {activeTab === 'projects' && (
-          <ProjectArchiveView
-            onOpenAddProject={() => { setEditingProject(null); setIsProjectFormOpen(true); }}
-            onEditProject={p => { setEditingProject(p); setIsProjectFormOpen(true); }}
-            onArchitectProject={handleArchitectProject}
-          />
-        )}
-
-        {activeTab === 'campus' && (
-          <CampusCommandCenter
             onOpenAddDepartment={() => { setEditingDept(null); setIsDeptFormOpen(true); }}
             onOpenAddCampus={() => { setEditingCampus(null); setIsCampusFormOpen(true); }}
-            onEditDepartment={d => { setEditingDept(d); setIsDeptFormOpen(true); }}
-            onEditCampus={c => { setEditingCampus(c); setIsCampusFormOpen(true); }}
-            onSelectStudent={s => setStudentModalTarget(s)}
+            onOpenAdmin={() => setIsAdminOpen(true)}
+            onNavigateAuth={route => navigateTo(route)}
           />
-        )}
 
-        {activeTab === 'how-it-works' && (
-          <HowItWorksView />
-        )}
-      </main>
+          {/* Main Content Area */}
+          <main className="flex-1 w-full max-w-7xl mx-auto px-4 sm:px-8 pt-4 pb-16 relative z-10">
+            {currentRoute === 'architect' && (
+              <>
+                {errorMessage && (
+                  <div className="max-w-2xl mx-auto my-6 p-6 rounded-3xl bg-error-container border border-error text-on-error-container space-y-3 animate-fadeIn">
+                    <div className="flex items-center gap-3">
+                      <span className="material-symbols-outlined text-3xl text-error">error</span>
+                      <div>
+                        <h3 className="font-headline font-extrabold text-base">
+                          AI CONNECTION ERROR
+                        </h3>
+                        <p className="text-xs font-body opacity-90">
+                          {errorMessage}
+                        </p>
+                      </div>
+                    </div>
+                    <div className="flex items-center justify-end gap-3 pt-2">
+                      <button
+                        onClick={() => setErrorMessage(null)}
+                        className="px-4 py-1.5 rounded-full hover:bg-white/10 text-xs font-headline font-bold"
+                      >
+                        Dismiss
+                      </button>
+                      <button
+                        onClick={() => handleArchitect(prompt)}
+                        className="px-5 py-1.5 rounded-full bg-error text-white font-headline text-xs font-extrabold shadow-sm hover:scale-105"
+                      >
+                        Retry Analysis
+                      </button>
+                    </div>
+                  </div>
+                )}
 
-      {/* Modals */}
+                {isAnalyzing ? (
+                  <AnalysisSequence onComplete={() => {}} />
+                ) : analysisResult ? (
+                  <ArchitectDashboard
+                    result={analysisResult}
+                    onReArchitect={() => {
+                      setAnalysisResult(null);
+                      playChime();
+                    }}
+                    onSelectStudent={s => setStudentModalTarget(s)}
+                  />
+                ) : (
+                  <HeroInput
+                    prompt={prompt}
+                    setPrompt={setPrompt}
+                    onArchitect={handleArchitect}
+                    onExploreTalent={() => navigateTo('talent')}
+                    isAnalyzing={isAnalyzing}
+                  />
+                )}
+              </>
+            )}
+
+            {currentRoute === 'talent' && (
+              <TalentMatrixView
+                onOpenAddStudent={() => { setEditingStudent(null); setIsStudentFormOpen(true); }}
+                onOpenAddProject={() => { setEditingProject(null); setIsProjectFormOpen(true); }}
+                onEditStudent={s => { setEditingStudent(s); setIsStudentFormOpen(true); }}
+                onNavigateToArchitect={() => navigateTo('architect')}
+              />
+            )}
+
+            {currentRoute === 'projects' && (
+              <ProjectArchiveView
+                onOpenAddProject={() => { setEditingProject(null); setIsProjectFormOpen(true); }}
+                onEditProject={p => { setEditingProject(p); setIsProjectFormOpen(true); }}
+                onArchitectProject={handleArchitectProject}
+              />
+            )}
+
+            {currentRoute === 'campus' && (
+              <CampusCommandCenter
+                onOpenAddDepartment={() => { setEditingDept(null); setIsDeptFormOpen(true); }}
+                onOpenAddCampus={() => { setEditingCampus(null); setIsCampusFormOpen(true); }}
+                onEditDepartment={d => { setEditingDept(d); setIsDeptFormOpen(true); }}
+                onEditCampus={c => { setEditingCampus(c); setIsCampusFormOpen(true); }}
+                onSelectStudent={s => setStudentModalTarget(s)}
+              />
+            )}
+
+            {currentRoute === 'how-it-works' && (
+              <HowItWorksView />
+            )}
+          </main>
+
+          {/* Footer */}
+          <Footer />
+        </>
+      )}
+
+      {/* Global Modals */}
       <StudentModal
         student={studentModalTarget}
         onClose={() => setStudentModalTarget(null)}
@@ -226,9 +314,6 @@ const MainApp: React.FC = () => {
         onOpenAddDepartment={() => { setEditingDept(null); setIsDeptFormOpen(true); }}
         onOpenAddCampus={() => { setEditingCampus(null); setIsCampusFormOpen(true); }}
       />
-
-      {/* Footer */}
-      <Footer />
     </div>
   );
 };
@@ -236,7 +321,9 @@ const MainApp: React.FC = () => {
 export default function App() {
   return (
     <DataProvider>
-      <MainApp />
+      <AuthProvider>
+        <MainApp />
+      </AuthProvider>
     </DataProvider>
   );
 }

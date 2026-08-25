@@ -214,11 +214,11 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
   // Project CRUD
   const addProject = (projectData: Omit<ProjectArchetype, 'id'>): ProjectArchetype => {
     const newId = `proj-${Date.now()}`;
-    const newProject: ProjectArchetype = {
+    const newProject = {
       ...projectData,
       id: newId,
       isUserCreated: true
-    };
+    } as ProjectArchetype;
     setProjects(prev => [newProject, ...prev]);
     addActivity(`New project added: "${newProject.title}".`, 'project');
     return newProject;
@@ -243,10 +243,10 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
   // Department CRUD
   const addDepartment = (deptData: Omit<Department, 'id'>): Department => {
     const newId = `dept-${Date.now()}`;
-    const newDept: Department = {
+    const newDept = {
       ...deptData,
       id: newId
-    };
+    } as Department;
     setDepartments(prev => [...prev, newDept]);
     addActivity(`New academic department added: ${newDept.name}.`, 'department');
     return newDept;
@@ -263,10 +263,10 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
   // Campus CRUD
   const addCampus = (campusData: Omit<Campus, 'id'>): Campus => {
     const newId = `camp-${Date.now()}`;
-    const newCampus: Campus = {
+    const newCampus = {
       ...campusData,
       id: newId
-    };
+    } as Campus;
     setCampuses(prev => [...prev, newCampus]);
     addActivity(`New campus facility registered: ${newCampus.name}.`, 'system');
     return newCampus;

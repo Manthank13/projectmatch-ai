@@ -29,7 +29,8 @@ export const ProjectArchiveView: React.FC<ProjectArchiveViewProps> = ({
 
   const filteredProjects = projects.filter(p => {
     if (selectedFilter === 'ALL') return true;
-    return p.tag.toUpperCase().includes(selectedFilter);
+    const projectTag = (p.tag || (p.tags ? p.tags[0] : '')).toUpperCase();
+    return projectTag.includes(selectedFilter);
   });
 
   return (

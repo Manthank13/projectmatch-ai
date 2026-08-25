@@ -1,5 +1,7 @@
 import React from 'react';
 import { Student } from '../../types';
+import { getStudentAvatar } from '../../utils/avatar';
+import { ProfileLinks } from '../common/ProfileLinks';
 
 interface StudentModalProps {
   student: Student | null;
@@ -16,15 +18,14 @@ export const StudentModal: React.FC<StudentModalProps> = ({
 }) => {
   if (!student) return null;
 
-  const photoSrc = student.profileImage || student.avatar;
-  const isRealPhoto = !!student.profileImage;
+  const photoSrc = getStudentAvatar(student);
+  const isRealUser = !!student.isUserCreated;
 
   const confidenceScore = student.profileConfidence || 94;
   const proofScore = student.proofOfWorkScore || 91;
-  const completenessScore = student.profileCompletion || 88;
 
   const links = student.professionalLinks || {};
-  const hasAnyLink = links.github || links.linkedin || links.portfolio || links.kaggle || links.leetcode;
+  const hasAnyLink = Object.values(links).some(v => Boolean(v && v.trim()));
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-md animate-fadeIn overflow-y-auto">
@@ -33,20 +34,20 @@ export const StudentModal: React.FC<StudentModalProps> = ({
         <div className="flex items-start justify-between border-b border-outline-variant/40 pb-6 mb-6">
           <div className="flex flex-col sm:flex-row items-center sm:items-start gap-5 text-center sm:text-left">
             <div className="relative">
-              <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-3xl overflow-hidden border-3 border-primary-container shadow-soft flex-shrink-0 bg-surface">
+              <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-3xl overflow-hidden border-2 border-cyan-400/40 shadow-cyan-glow flex-shrink-0 bg-surface">
                 <img
                   src={photoSrc}
                   alt={student.name}
                   className="w-full h-full object-cover"
                 />
               </div>
-              {isRealPhoto ? (
-                <span className="absolute -bottom-2 -right-1 px-2 py-0.5 rounded-full bg-green-600 text-white text-[9px] font-headline font-bold shadow-sm">
-                  ✓ Real Photo
+              {isRealUser ? (
+                <span className="absolute -bottom-2 -right-1 px-2.5 py-0.5 rounded-full bg-mint-accent/20 border border-mint-accent/40 text-mint-accent text-[9px] font-headline font-bold shadow-sm">
+                  ✓ Verified
                 </span>
               ) : (
-                <span className="absolute -bottom-2 -right-1 px-2 py-0.5 rounded-full bg-secondary-fixed text-on-secondary-fixed text-[9px] font-headline font-bold shadow-sm">
-                  Demo Avatar
+                <span className="absolute -bottom-2 -right-1 px-2.5 py-0.5 rounded-full bg-white/10 border border-outline-variant text-on-surface-variant text-[9px] font-mono font-bold shadow-sm">
+                  Synthetic
                 </span>
               )}
             </div>
@@ -56,11 +57,11 @@ export const StudentModal: React.FC<StudentModalProps> = ({
                 <h2 className="text-2xl sm:text-3xl font-headline font-extrabold text-on-surface">
                   {student.name}
                 </h2>
-                <span className="px-2.5 py-0.5 rounded-full bg-secondary-fixed text-on-secondary-fixed text-[11px] font-headline font-bold">
+                <span className="px-2.5 py-0.5 rounded-full bg-violet-500/15 border border-violet-400/30 text-violet-300 text-[11px] font-headline font-bold">
                   {student.year || '3rd Year'}
                 </span>
               </div>
-              <p className="text-sm font-headline font-bold text-primary uppercase mt-1">
+              <p className="text-sm font-headline font-bold text-cyan-400 uppercase mt-1">
                 {student.role}
               </p>
               <p className="text-xs font-body text-on-surface-variant mt-0.5">
@@ -83,7 +84,7 @@ export const StudentModal: React.FC<StudentModalProps> = ({
                   onClose();
                   onEditStudent(student);
                 }}
-                className="p-2 rounded-full hover:bg-surface-variant text-on-surface-variant"
+                className="p-2 rounded-full hover:bg-white/[0.08] text-on-surface-variant hover:text-cyan-300"
                 title="Edit Student Profile"
               >
                 <span className="material-symbols-outlined text-base">edit</span>
@@ -105,7 +106,7 @@ export const StudentModal: React.FC<StudentModalProps> = ({
 
             <button
               onClick={onClose}
-              className="p-2 rounded-full hover:bg-surface-variant text-on-surface-variant"
+              className="p-2 rounded-full hover:bg-white/[0.08] text-on-surface-variant hover:text-on-surface"
             >
               <span className="material-symbols-outlined">close</span>
             </button>
@@ -114,34 +115,34 @@ export const StudentModal: React.FC<StudentModalProps> = ({
 
         {/* Verification & Trust Metrics Pod */}
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-6 font-headline text-xs text-center">
-          <div className="p-3.5 rounded-2xl glass-panel border border-primary-container/40">
+          <div className="p-3.5 rounded-2xl glass-identity-card border border-cyan-400/30">
             <span className="text-[10px] text-on-surface-variant block uppercase font-bold mb-0.5">
               PROFILE CONFIDENCE
             </span>
-            <span className="text-xl font-extrabold text-primary flex items-center justify-center gap-1">
-              <span className="material-symbols-outlined text-base text-primary">verified</span>
+            <span className="text-xl font-extrabold text-cyan-400 flex items-center justify-center gap-1">
+              <span className="material-symbols-outlined text-base text-cyan-400">verified</span>
               {confidenceScore}%
             </span>
             <span className="text-[9px] text-on-surface-variant block">PLATFORM-GENERATED</span>
           </div>
 
-          <div className="p-3.5 rounded-2xl glass-panel border border-secondary-container/40">
+          <div className="p-3.5 rounded-2xl glass-identity-card border border-violet-500/30">
             <span className="text-[10px] text-on-surface-variant block uppercase font-bold mb-0.5">
               PROOF OF WORK
             </span>
-            <span className="text-xl font-extrabold text-secondary flex items-center justify-center gap-1">
-              <span className="material-symbols-outlined text-base text-secondary">code_blocks</span>
+            <span className="text-xl font-extrabold text-violet-400 flex items-center justify-center gap-1">
+              <span className="material-symbols-outlined text-base text-violet-400">code_blocks</span>
               {proofScore}%
             </span>
             <span className="text-[9px] text-on-surface-variant block">DEMONSTRATED EVIDENCE</span>
           </div>
 
-          <div className="p-3.5 rounded-2xl glass-panel border border-tertiary-container/40">
+          <div className="p-3.5 rounded-2xl glass-identity-card border border-mint-accent/30">
             <span className="text-[10px] text-on-surface-variant block uppercase font-bold mb-0.5">
               WEEKLY AVAILABILITY
             </span>
-            <span className="text-xl font-extrabold text-tertiary flex items-center justify-center gap-1">
-              <span className="material-symbols-outlined text-base text-tertiary">schedule</span>
+            <span className="text-xl font-extrabold text-mint-accent flex items-center justify-center gap-1">
+              <span className="material-symbols-outlined text-base text-mint-accent">schedule</span>
               {student.availabilityHours} hrs/wk
             </span>
             <span className="text-[9px] text-on-surface-variant block">OVERLAP COMMITMENT</span>
@@ -154,65 +155,13 @@ export const StudentModal: React.FC<StudentModalProps> = ({
             <span className="text-xs font-headline font-bold uppercase tracking-wider text-on-surface-variant block">
               FIND ME ONLINE & PROOF OF WORK:
             </span>
-            <div className="flex flex-wrap gap-2">
-              {links.github && (
-                <a
-                  href={links.github}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="px-3.5 py-1.5 rounded-full glass-pill text-xs font-headline font-bold text-on-surface hover:text-primary flex items-center gap-1.5 shadow-sm"
-                  title="View GitHub profile"
-                >
-                  <span className="material-symbols-outlined text-sm text-primary">terminal</span>
-                  <span>GitHub</span>
-                  <span className="material-symbols-outlined text-[12px] opacity-70">open_in_new</span>
-                </a>
-              )}
-              {links.linkedin && (
-                <a
-                  href={links.linkedin}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="px-3.5 py-1.5 rounded-full glass-pill text-xs font-headline font-bold text-on-surface hover:text-secondary flex items-center gap-1.5 shadow-sm"
-                  title="View LinkedIn profile"
-                >
-                  <span className="material-symbols-outlined text-sm text-secondary">work</span>
-                  <span>LinkedIn</span>
-                  <span className="material-symbols-outlined text-[12px] opacity-70">open_in_new</span>
-                </a>
-              )}
-              {links.portfolio && (
-                <a
-                  href={links.portfolio}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="px-3.5 py-1.5 rounded-full glass-pill text-xs font-headline font-bold text-on-surface hover:text-tertiary flex items-center gap-1.5 shadow-sm"
-                  title="View Personal Portfolio"
-                >
-                  <span className="material-symbols-outlined text-sm text-tertiary">language</span>
-                  <span>Portfolio</span>
-                  <span className="material-symbols-outlined text-[12px] opacity-70">open_in_new</span>
-                </a>
-              )}
-              {links.kaggle && (
-                <a
-                  href={links.kaggle}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="px-3.5 py-1.5 rounded-full glass-pill text-xs font-headline font-bold text-on-surface hover:text-green-600 flex items-center gap-1.5 shadow-sm"
-                >
-                  <span className="material-symbols-outlined text-sm text-green-600">analytics</span>
-                  <span>Kaggle</span>
-                  <span className="material-symbols-outlined text-[12px] opacity-70">open_in_new</span>
-                </a>
-              )}
-            </div>
+            <ProfileLinks links={links} size="md" />
           </div>
         )}
 
         {/* AI Match Insights */}
-        <div className="p-4 mb-6 rounded-2xl bg-gradient-to-br from-primary-fixed/20 via-surface to-secondary-fixed/20 border border-primary-fixed-dim/50 space-y-2">
-          <div className="flex items-center gap-2 text-xs font-headline font-bold text-primary uppercase">
+        <div className="p-4 mb-6 rounded-2xl bg-gradient-to-br from-cyan-500/10 via-surface to-violet-500/10 border border-cyan-400/30 space-y-2">
+          <div className="flex items-center gap-2 text-xs font-headline font-bold text-cyan-400 uppercase">
             <span className="material-symbols-outlined text-base">psychology</span>
             <span>WHY PROJECTMATCH RECOMMENDS THIS PERSON:</span>
           </div>
@@ -228,7 +177,7 @@ export const StudentModal: React.FC<StudentModalProps> = ({
           <span className="text-xs font-headline font-bold uppercase tracking-wider text-on-surface-variant block">
             ABOUT & BACKGROUND:
           </span>
-          <p className="text-xs sm:text-sm text-on-surface-variant font-body leading-relaxed p-4 rounded-2xl glass-panel border border-outline-variant/40">
+          <p className="text-xs sm:text-sm text-on-surface-variant font-body leading-relaxed p-4 rounded-2xl glass-identity-card border border-outline-variant/40">
             {student.bio}
           </p>
         </div>
@@ -242,7 +191,7 @@ export const StudentModal: React.FC<StudentModalProps> = ({
             {student.skills.map((sk) => (
               <div
                 key={sk.name}
-                className="p-3 rounded-2xl glass-panel border border-outline-variant/30 flex items-center justify-between text-xs font-headline"
+                className="p-3 rounded-2xl glass-identity-card border border-outline-variant/30 flex items-center justify-between text-xs font-headline"
               >
                 <div>
                   <span className="font-bold text-on-surface block">{sk.name}</span>
@@ -251,7 +200,7 @@ export const StudentModal: React.FC<StudentModalProps> = ({
                   </span>
                 </div>
                 <div className="flex items-center gap-1.5">
-                  <span className="px-2 py-0.5 rounded-full bg-primary-fixed text-on-primary-fixed text-[11px] font-extrabold">
+                  <span className="px-2 py-0.5 rounded-full bg-cyan-500/15 text-cyan-300 border border-cyan-400/30 text-[11px] font-extrabold">
                     {sk.score * 10}%
                   </span>
                 </div>
@@ -270,14 +219,14 @@ export const StudentModal: React.FC<StudentModalProps> = ({
               {student.projectPortfolio.map((proj, idx) => (
                 <div
                   key={idx}
-                  className="p-4 rounded-2xl glass-panel border border-outline-variant/40 space-y-2"
+                  className="p-4 rounded-2xl glass-identity-card border border-outline-variant/40 space-y-2"
                 >
                   <div className="flex items-center justify-between gap-2">
                     <div className="flex items-center gap-2">
                       <h4 className="font-headline font-extrabold text-sm text-on-surface">
                         {proj.name}
                       </h4>
-                      <span className="text-[10px] px-2 py-0.5 rounded-full bg-secondary-fixed text-on-secondary-fixed font-bold">
+                      <span className="text-[10px] px-2 py-0.5 rounded-full bg-violet-500/20 text-violet-300 border border-violet-400/30 font-bold">
                         {proj.role}
                       </span>
                     </div>
@@ -287,7 +236,7 @@ export const StudentModal: React.FC<StudentModalProps> = ({
                         href={proj.githubUrl}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="text-xs font-headline font-bold text-primary hover:underline flex items-center gap-1"
+                        className="text-xs font-headline font-bold text-cyan-400 hover:underline flex items-center gap-1"
                       >
                         <span>Code</span>
                         <span className="material-symbols-outlined text-[12px]">open_in_new</span>
@@ -301,7 +250,7 @@ export const StudentModal: React.FC<StudentModalProps> = ({
                     {proj.technologies.map(t => (
                       <span
                         key={t}
-                        className="px-2 py-0.5 rounded-md bg-surface-container text-[10px] font-headline font-bold text-on-surface"
+                        className="px-2 py-0.5 rounded-md bg-white/10 text-[10px] font-headline font-bold text-on-surface"
                       >
                         {t}
                       </span>
@@ -319,9 +268,9 @@ export const StudentModal: React.FC<StudentModalProps> = ({
             <span className="text-xs font-headline font-bold uppercase tracking-wider text-on-surface-variant block">
               ATTACHED RESUME:
             </span>
-            <div className="p-3.5 rounded-2xl glass-panel border border-secondary-container/40 flex items-center justify-between">
+            <div className="p-3.5 rounded-2xl glass-identity-card border border-violet-500/30 flex items-center justify-between">
               <div className="flex items-center gap-3">
-                <span className="material-symbols-outlined text-2xl text-secondary">description</span>
+                <span className="material-symbols-outlined text-2xl text-violet-400">description</span>
                 <div>
                   <p className="font-headline font-bold text-xs text-on-surface">
                     {student.resume.name}
@@ -335,7 +284,7 @@ export const StudentModal: React.FC<StudentModalProps> = ({
                 <a
                   href={student.resume.dataUrl}
                   download={student.resume.name}
-                  className="px-3 py-1.5 rounded-xl bg-primary-container text-on-primary-container font-headline text-xs font-bold shadow-sm hover:scale-105"
+                  className="px-3.5 py-1.5 rounded-xl bg-cyan-500 text-space-black font-headline text-xs font-bold shadow-cyan-glow hover:scale-105"
                 >
                   Download / View
                 </a>
@@ -351,7 +300,7 @@ export const StudentModal: React.FC<StudentModalProps> = ({
           </span>
           <button
             onClick={onClose}
-            className="px-6 py-2.5 rounded-full bg-primary-container text-on-primary-container hover:scale-105 transition-all shadow-soft"
+            className="px-6 py-2.5 rounded-full bg-cyan-500 text-space-black font-headline text-xs font-extrabold shadow-cyan-glow hover:scale-105 transition-all"
           >
             Close Dossier
           </button>

@@ -30,7 +30,7 @@ export const CampusCommandCenter: React.FC<CampusCommandCenterProps> = ({
   // Find students stationed in the selected zone
   const stationedStudents = students.filter(s =>
     s.campusZone === activeZone.name ||
-    activeZone.coreDomains.some(d => s.skills.some(sk => sk.name.toLowerCase().includes(d.toLowerCase().split(' ')[0])))
+    activeZone.coreDomains.some((d: string) => s.skills.some(sk => sk.name.toLowerCase().includes(d.toLowerCase().split(' ')[0])))
   );
 
   return (
@@ -290,7 +290,7 @@ export const CampusCommandCenter: React.FC<CampusCommandCenterProps> = ({
 
                 {/* Core Skills */}
                 <div className="flex flex-wrap gap-1 mb-4">
-                  {dept.coreSkills.map(sk => (
+                  {(dept.coreSkills || dept.keySkillFocus || []).map((sk: string) => (
                     <span
                       key={sk}
                       className="px-2 py-0.5 rounded-md bg-surface-container text-[10px] font-headline font-bold text-on-surface"
@@ -343,7 +343,7 @@ export const CampusCommandCenter: React.FC<CampusCommandCenterProps> = ({
                   {camp.name}
                 </h3>
                 <p className="text-xs font-headline font-bold text-secondary mb-3">
-                  📍 {camp.location}
+                  📍 {camp.location || camp.city || 'Main Facility'}
                 </p>
                 <p className="text-xs font-body text-on-surface-variant leading-relaxed mb-4 min-h-[48px]">
                   {camp.description}
@@ -354,7 +354,7 @@ export const CampusCommandCenter: React.FC<CampusCommandCenterProps> = ({
                   <span className="font-headline font-bold text-[10px] uppercase text-on-surface-variant block">
                     FACILITIES & LABS:
                   </span>
-                  {camp.labs.map(lab => (
+                  {(camp.labs || []).map((lab: string) => (
                     <div key={lab} className="flex items-center gap-1 text-on-surface text-[11px]">
                       <span className="material-symbols-outlined text-xs text-primary">science</span>
                       <span>{lab}</span>

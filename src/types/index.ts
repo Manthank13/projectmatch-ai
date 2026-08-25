@@ -13,6 +13,34 @@ export type SkillDomain =
 
 export type ThemeMode = 'light' | 'dark' | 'system';
 
+export interface TeamDNAMetric {
+  label: string;
+  score: number;
+  color: string;
+}
+
+export interface ActivityItem {
+  id: string;
+  type: 'STUDENT_JOINED' | 'PROJECT_CREATED' | 'TEAM_ARCHITECTED' | 'CAMPUS_EXPANDED' | 'student' | 'project' | 'department' | 'system' | string;
+  title?: string;
+  text?: string;
+  timestamp?: string;
+  timeAgo?: string;
+  description?: string;
+  meta?: any;
+}
+
+export interface CampusZone {
+  id: string;
+  name: string;
+  code?: string;
+  campusId?: string;
+  building?: string;
+  activeNodes?: number;
+  tagline?: string;
+  [key: string]: any;
+}
+
 export interface StudentSkill {
   name: string;
   score: number; // 1 to 10
@@ -58,13 +86,13 @@ export interface ExperienceItem {
   organization: string;
   role: string;
   description: string;
-  duration: string;
-  link?: string;
-  type?: 'Internship' | 'Research' | 'Hackathon' | 'Leadership' | 'Club';
+  startDate?: string;
+  endDate?: string;
+  current?: boolean;
 }
 
 export interface Student {
-  id: string; // e.g. 'S001' or 'U-1234'
+  id: string;
   name: string;
   department: string;
   campus: string;
@@ -77,8 +105,9 @@ export interface Student {
   marginalTeamValue?: number; // percentage (e.g. 90)
   uniqueContribution?: string;
   personalityLine: string;
+  avatarUrl?: string; // Standard single source of truth for profile image
   avatar: string; // Fictional/cartoon avatar or fallback
-  profileImage?: string; // Real uploaded user photo (Data URL or image URL)
+  profileImage?: string; // Uploaded user photo
   bio: string;
   campusZone: string;
   satelliteExperience?: boolean;
@@ -102,63 +131,70 @@ export interface Student {
     resume: 'TEAM_MATCHES_ONLY' | 'PROFILE_VIEWERS' | 'PRIVATE';
   };
   isUserCreated?: boolean;
+  isSyntheticDemo?: boolean;
 }
 
 export interface ProjectArchetype {
   id: string;
   title: string;
   slug: string;
-  movieTag: string; // e.g. '01 — INTERSTELLAR'
-  tag: string; // e.g. 'AI × ENVIRONMENT'
+  category?: string;
   description: string;
+  department?: string;
+  campus?: string;
   teamSize: number;
+  minAvailability: number;
   mandatorySkills: string[];
   preferredSkills: string[];
-  mandatoryDomain?: string;
-  preferredDomain?: string;
-  minAvailability: number;
+  mandatoryDomain?: SkillDomain;
+  mandatoryDomains?: SkillDomain[];
+  idealTeamIds?: string[];
+  hiddenValueId?: string;
+  difficulty?: 'BEGINNER' | 'INTERMEDIATE' | 'ADVANCED' | 'ELITE';
+  isUserCreated?: boolean;
+  tags?: string[];
+  tag?: string;
+  movieTag?: string;
+  icon?: string;
+  accentColor?: string;
   minExperience?: string;
   preferredDepartments?: string[];
   preferredCampuses?: string[];
-  constraints?: string[];
-  icon: string;
-  accentColor: string;
-  idealTeamIds: string[];
-  nearMissId?: string;
-  hiddenValueId?: string;
-  isUserCreated?: boolean;
+  [key: string]: any;
 }
 
 export interface Department {
   id: string;
   name: string;
   code: string;
+  building?: string;
   campus: string;
-  description: string;
-  coreSkills: string[];
-  researchAreas: string[];
+  totalStudents?: number;
+  keySkillFocus?: string[];
+  coreSkills?: string[];
+  researchAreas?: string[];
+  leadProfessor?: string;
+  activeProjectsCount?: number;
+  description?: string;
+  [key: string]: any;
 }
 
 export interface Campus {
   id: string;
   name: string;
-  location: string;
-  description: string;
-  departments: string[];
-  labs: string[];
-}
-
-export interface ActivityItem {
-  id: string;
-  text: string;
-  timeAgo: string;
-  type: 'student' | 'project' | 'department' | 'system';
-}
-
-export interface TeamDNAMetric {
-  label: string;
-  score: number; // 0 to 100
-  color: string;
+  code?: string;
+  city?: string;
+  state?: string;
+  location?: string;
+  established?: string;
+  studentCount?: number;
+  primaryFocus?: string;
+  zones?: string[];
+  departments?: string[];
+  labs?: string[];
+  image?: string;
+  description?: string;
+  [key: string]: any;
 }
 
 export interface TeamArchitectResult {
@@ -205,23 +241,49 @@ export interface TeamArchitectResult {
     whyThisTeam: string;
     teamStrengths: string[];
     teamGaps: string[];
-    source: string;
+    source?: string;
   };
 }
 
-export interface CampusZone {
+export interface CampusNetworkNode {
   id: string;
-  name: string;
-  code: string;
-  tagline: string;
-  description: string;
-  activeStudents: number;
-  coreDomains: string[];
-  coordinates: { x: number; y: number };
-  color: string;
-  telemetry: {
-    gpuLoad: string;
-    activeExperiments: number;
-    talentUtilization: string;
-  };
+  label: string;
+  type: 'STUDENT' | 'DEPARTMENT' | 'PROJECT' | 'CAMPUS';
+  group: string;
+  size: number;
+  color?: string;
+  x?: number;
+  y?: number;
+}
+
+export interface CampusNetworkLink {
+  source: string;
+  target: string;
+  label?: string;
+  value?: number;
+}
+
+/* ==========================================================
+   AUTHENTICATION INTERFACES (Supabase Ready)
+   ========================================================== */
+
+export interface AuthUser {
+  id: string;
+  email: string;
+  fullName: string;
+  avatarUrl?: string;
+  universityEmail?: string;
+  studentId?: string;
+  role?: string;
+  department?: string;
+  campus?: string;
+  emailVerified: boolean;
+  createdAt: string;
+}
+
+export interface AuthState {
+  user: AuthUser | null;
+  isAuthenticated: boolean;
+  isLoading: boolean;
+  error: string | null;
 }
