@@ -14,7 +14,7 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
   onNavigateToLogin
 }) => {
   const { user, updateProfile, logout, isLoading } = useAuth();
-  const { departments, campuses } = useData();
+  const { departments, campuses, refreshProfiles } = useData();
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -135,6 +135,7 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
 
     if (success) {
       setSaveSuccess(true);
+      await refreshProfiles();
       setTimeout(() => setSaveSuccess(false), 4000);
     } else {
       setSaveError('Failed to save profile changes. Please try again.');

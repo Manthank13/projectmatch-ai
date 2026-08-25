@@ -20,7 +20,7 @@ export const TalentMatrixView: React.FC<TalentMatrixViewProps> = ({
   onEditStudent,
   onNavigateToArchitect
 }) => {
-  const { students, deleteStudent, departments, campuses } = useData();
+  const { students, deleteStudent, departments, campuses, isProfilesLoading, refreshProfiles } = useData();
 
   // Search & Filter State
   const [searchQuery, setSearchQuery] = useState('');
@@ -49,6 +49,8 @@ export const TalentMatrixView: React.FC<TalentMatrixViewProps> = ({
 
   const filters = [
     'ALL',
+    'CAMPUS MEMBERS',
+    'DEMO SHOWCASE',
     'AI / ML',
     'CSE',
     'DESIGN',
@@ -78,7 +80,11 @@ export const TalentMatrixView: React.FC<TalentMatrixViewProps> = ({
       }
 
       // 2. Primary Domain / Category Filter
-      if (selectedFilter !== 'ALL') {
+      if (selectedFilter === 'CAMPUS MEMBERS') {
+        if (!student.isUserCreated && student.isSyntheticDemo !== false) return false;
+      } else if (selectedFilter === 'DEMO SHOWCASE') {
+        if (student.isUserCreated) return false;
+      } else if (selectedFilter !== 'ALL') {
         const hasDomain = student.domains.some(d => d.toUpperCase().includes(selectedFilter.toUpperCase()));
         const hasSkillCategory = student.skills.some(s => s.category.toUpperCase().includes(selectedFilter.toUpperCase()));
         const hasSkillName = student.skills.some(s => s.name.toUpperCase().includes(selectedFilter.toUpperCase()));

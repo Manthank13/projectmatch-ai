@@ -100,58 +100,7 @@ const MainApp: React.FC = () => {
     return () => window.removeEventListener('popstate', handlePopState);
   }, []);
 
-  // Sync Authenticated user into student dataset
-  useEffect(() => {
-    if (user && isAuthenticated) {
-      const existingStudent = students.find(s => s.id === user.id);
-      if (!existingStudent) {
-        const newStudentModel: Student = {
-          id: user.id,
-          name: user.fullName || user.email.split('@')[0],
-          department: user.department || 'Computer Science & Engineering',
-          campus: user.campus || 'Main Campus (Kattankulathur)',
-          year: '3rd Year (Junior)',
-          role: user.role || 'Student Technologist',
-          availabilityHours: user.availabilityHours || 14,
-          individualFitScore: 92,
-          marginalTeamValue: 88,
-          uniqueContribution: user.bio || 'Full-Stack Execution & System Architecture',
-          personalityLine: 'Ready to build high-impact projects.',
-          avatar: user.avatarUrl || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80',
-          avatarUrl: user.avatarUrl || undefined,
-          campusZone: 'CAMPUS INNOVATION HUB',
-          bio: user.bio || 'Passionate student technologist ready to build high-impact projects.',
-          skills: user.skills && user.skills.length > 0 ? user.skills : [
-            { name: 'Python', score: 9, category: 'AI / ML' },
-            { name: 'Full-Stack Engineering', score: 9, category: 'CSE' },
-            { name: 'System Architecture', score: 8, category: 'CSE' }
-          ],
-          domains: ['CSE', 'AI / ML'],
-          pastProjects: [],
-          badges: ['Verified Technologist'],
-          professionalLinks: {
-            github: user.githubUrl || undefined,
-            linkedin: user.linkedinUrl || undefined,
-            portfolio: user.portfolioUrl || undefined
-          },
-          isUserCreated: true,
-          isSyntheticDemo: false,
-          isDemo: false
-        };
-        addStudent(newStudentModel);
-      } else if (user.avatarUrl && existingStudent.avatarUrl !== user.avatarUrl) {
-        updateStudent(existingStudent.id, {
-          avatarUrl: user.avatarUrl,
-          name: user.fullName || existingStudent.name,
-          role: user.role || existingStudent.role,
-          department: user.department || existingStudent.department,
-          campus: user.campus || existingStudent.campus,
-          bio: user.bio || existingStudent.bio,
-          skills: user.skills && user.skills.length > 0 ? user.skills : existingStudent.skills
-        });
-      }
-    }
-  }, [user, isAuthenticated, students]);
+
 
   // Architect Pipeline State
   const [prompt, setPrompt] = useState('');

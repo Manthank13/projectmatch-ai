@@ -1,8 +1,10 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import { Student, ProjectArchetype, Department, Campus, ActivityItem, ThemeMode } from '../types';
 import { INITIAL_STUDENTS } from '../data/students';
 import { INITIAL_PROJECTS } from '../data/projects';
 import { INITIAL_DEPARTMENTS, INITIAL_CAMPUSES } from '../data/campusNodes';
+import { supabase, getAllProfiles, DatabaseProfile } from '../lib/supabase';
+import { mergeStudentsWithProfiles, mapProfileToStudent } from '../utils/studentMapper';
 
 interface DataContextType {
   students: Student[];
@@ -12,8 +14,10 @@ interface DataContextType {
   activityLog: ActivityItem[];
   theme: ThemeMode;
   setTheme: (theme: ThemeMode) => void;
+  isProfilesLoading: boolean;
+  refreshProfiles: () => Promise<void>;
   // Student CRUD
-  addStudent: (student: Omit<Student, 'id'>) => Student;
+  addStudent: (student: Partial<Student> & { name: string; department: string }) => Student;
   updateStudent: (id: string, student: Partial<Student>) => void;
   deleteStudent: (id: string) => void;
   // Project CRUD
@@ -49,16 +53,74 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
     return (saved as ThemeMode) || 'light';
   });
 
-  // Students state with localStorage
+  // Loading state for Supabase profiles
+  const [isProfilesLoading, setIsProfilesLoading] = useState(false);
+
+  // Students state initialized with merged demo and stored users
   const [students, setStudents] = useState<Student[]>(() => {
-    try {
-      const saved = localStorage.getItem('pm_students');
-      if (saved) return JSON.parse(saved);
-    } catch (e) {
-      console.error('Failed to load students from localStorage', e);
-    }
-    return INITIAL_STUDENTS;
+    return INITIAL_STUDENTS.map(s => ({
+      ...s,
+      isSyntheticDemo: true,
+      isDemo: true,
+      isUserCreated: false
+    }));
   });
+
+  // Refresh Profiles from Supabase Postgres
+  const refreshProfiles = useCallback(async () => {
+    try {
+      setIsProfilesLoading(true);
+      const profiles = await getAllProfiles();
+      if (profiles) {
+        setStudents(mergeStudentsWithProfiles(profiles, INITIAL_STUDENTS));
+      }
+    } catch (err) {
+      console.warn('Could not refresh profiles from Supabase:', err);
+    } finally {
+      setIsProfilesLoading(false);
+    }
+  }, []);
+
+  // Initial load of Supabase Profiles and Realtime Subscription
+  useEffect(() => {
+    let isMounted = true;
+
+    async function loadData() {
+      try {
+        setIsProfilesLoading(true);
+        const profiles = await getAllProfiles();
+        if (isMounted && profiles && profiles.length > 0) {
+          setStudents(mergeStudentsWithProfiles(profiles, INITIAL_STUDENTS));
+        }
+      } catch (err) {
+        console.warn('Initial profiles load warning:', err);
+      } finally {
+        if (isMounted) setIsProfilesLoading(false);
+      }
+    }
+
+    loadData();
+
+    // Supabase Realtime channel to synchronize profiles automatically
+    const channel = supabase
+      .channel('public:profiles')
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'profiles' },
+        async () => {
+          if (isMounted) {
+            const updated = await getAllProfiles();
+            setStudents(mergeStudentsWithProfiles(updated, INITIAL_STUDENTS));
+          }
+        }
+      )
+      .subscribe();
+
+    return () => {
+      isMounted = false;
+      supabase.removeChannel(channel);
+    };
+  }, []);
 
   // Projects state with localStorage
   const [projects, setProjects] = useState<ProjectArchetype[]>(() => {
@@ -127,15 +189,6 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   }, [theme]);
 
-  // Persist students
-  useEffect(() => {
-    try {
-      localStorage.setItem('pm_students', JSON.stringify(students));
-    } catch (e) {
-      console.error('Failed to save students to localStorage', e);
-    }
-  }, [students]);
-
   // Persist projects
   useEffect(() => {
     try {
@@ -183,14 +236,45 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   // Student CRUD
-  const addStudent = (studentData: Omit<Student, 'id'>): Student => {
-    const newId = `S0${String(students.length + 1).padStart(2, '0')}`;
+  const addStudent = (studentData: Partial<Student> & { name: string; department: string }): Student => {
+    const studentId = studentData.id || `user-${Date.now()}`;
     const newStudent: Student = {
-      ...studentData,
-      id: newId,
-      isUserCreated: true
+      id: studentId,
+      name: studentData.name,
+      department: studentData.department,
+      campus: studentData.campus || 'Main Campus (Kattankulathur)',
+      year: studentData.year || '3rd Year (Junior)',
+      role: studentData.role || 'Student Technologist',
+      skills: studentData.skills || [{ name: 'Full-Stack Engineering', score: 8, category: 'CSE' }],
+      domains: studentData.domains || ['CSE'],
+      availabilityHours: studentData.availabilityHours || 14,
+      individualFitScore: studentData.individualFitScore || 90,
+      marginalTeamValue: studentData.marginalTeamValue || 85,
+      uniqueContribution: studentData.uniqueContribution || studentData.bio || 'Systems Architecture & Execution',
+      personalityLine: studentData.personalityLine || 'Verified campus builder.',
+      avatar: studentData.avatar || studentData.avatarUrl || '',
+      avatarUrl: studentData.avatarUrl || studentData.avatar || undefined,
+      profileImage: studentData.profileImage || studentData.avatarUrl || undefined,
+      bio: studentData.bio || 'Passionate student technologist ready to build high-impact projects.',
+      campusZone: studentData.campusZone || 'CAMPUS INNOVATION HUB',
+      badges: studentData.badges || ['Verified Member'],
+      pastProjects: studentData.pastProjects || [],
+      professionalLinks: studentData.professionalLinks || {},
+      isUserCreated: true,
+      isSyntheticDemo: false,
+      isDemo: false
     };
-    setStudents(prev => [newStudent, ...prev]);
+
+    setStudents(prev => {
+      const existingIndex = prev.findIndex(s => s.id === studentId);
+      if (existingIndex >= 0) {
+        const copy = [...prev];
+        copy[existingIndex] = { ...copy[existingIndex], ...newStudent };
+        return copy;
+      }
+      return [newStudent, ...prev];
+    });
+
     addActivity(`${newStudent.name} joined the talent network (${newStudent.department}).`, 'student');
     return newStudent;
   };
@@ -282,7 +366,6 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   // Reset Demo Data
   const resetDemoData = () => {
-    setStudents(INITIAL_STUDENTS);
     setProjects(INITIAL_PROJECTS);
     setDepartments(INITIAL_DEPARTMENTS);
     setCampuses(INITIAL_CAMPUSES);
@@ -292,6 +375,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
     localStorage.removeItem('pm_departments');
     localStorage.removeItem('pm_campuses');
     localStorage.removeItem('pm_activities');
+    refreshProfiles();
     addActivity('Synthetic demo dataset restored to pristine default state.', 'system');
   };
 
@@ -305,6 +389,8 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
         activityLog,
         theme,
         setTheme: setThemeState,
+        isProfilesLoading,
+        refreshProfiles,
         addStudent,
         updateStudent,
         deleteStudent,

@@ -33,6 +33,27 @@ export interface DatabaseProfile {
 }
 
 /**
+ * Fetch all registered profiles from Supabase Postgres
+ */
+export async function getAllProfiles(): Promise<DatabaseProfile[]> {
+  try {
+    const { data, error } = await supabase
+      .from('profiles')
+      .select('*')
+      .order('created_at', { ascending: false });
+
+    if (error) {
+      console.warn('Could not fetch Supabase profiles from postgres table:', error.message);
+      return [];
+    }
+    return data || [];
+  } catch (err) {
+    console.warn('Supabase getAllProfiles exception:', err);
+    return [];
+  }
+}
+
+/**
  * Fetch profile record by Supabase Auth User ID
  */
 export async function getProfile(userId: string): Promise<DatabaseProfile | null> {
