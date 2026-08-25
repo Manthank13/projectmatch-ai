@@ -55,7 +55,7 @@ const RouteLoadingFallback = () => (
 
 const MainApp: React.FC = () => {
   const { students, projects, updateStudent, addStudent } = useData();
-  const { user, isAuthenticated } = useAuth();
+  const { user, isAuthenticated, isLoading } = useAuth();
 
   // Route state initialized from pathname
   const [currentRoute, setCurrentRoute] = useState<AppRoute>(() => {
@@ -208,6 +208,24 @@ const MainApp: React.FC = () => {
     'reset-password',
     'verify-email'
   ].includes(currentRoute);
+
+  // Protect the main ProjectMatch application from unauthenticated users
+  useEffect(() => {
+    if (!isLoading && !isAuthenticated && !isAuthRoute) {
+      navigateTo('login');
+    }
+  }, [isLoading, isAuthenticated, isAuthRoute]);
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center bg-background text-on-background space-y-4">
+        <div className="w-10 h-10 rounded-full border-2 border-cyan-400/20 border-t-cyan-400 animate-spin" />
+        <span className="text-xs font-headline font-bold text-on-surface-variant tracking-wider uppercase">
+          Initializing Grid Session...
+        </span>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen flex flex-col bg-background text-on-background selection:bg-cyan-500/25 selection:text-cyan-300">

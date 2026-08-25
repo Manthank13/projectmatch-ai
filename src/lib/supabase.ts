@@ -1,18 +1,16 @@
 import { createClient } from '@supabase/supabase-js';
 
 // Supabase Environment Configuration
-const env = (import.meta as any).env || {};
-
-const supabaseUrl =
-  env.VITE_SUPABASE_URL ||
-  'https://hgqv4zpz4a3krmsqlrps2q.supabase.co';
-
+const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'https://placeholder.supabase.co';
 const supabaseKey =
-  env.VITE_SUPABASE_PUBLISHABLE_KEY ||
-  env.VITE_SUPABASE_ANON_KEY ||
-  'sb_publishable_hgqV4ZPz4a3kRmsQlrps2Q_A2ZrhKc7';
+  import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY ||
+  import.meta.env.VITE_SUPABASE_ANON_KEY ||
+  'placeholder-key';
 
-export const isSupabaseConfigured = Boolean(supabaseUrl && supabaseKey);
+export const isSupabaseConfigured = Boolean(
+  import.meta.env.VITE_SUPABASE_URL &&
+  (import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY || import.meta.env.VITE_SUPABASE_ANON_KEY)
+);
 
 // Create single persistent Supabase client instance
 export const supabase = createClient(supabaseUrl, supabaseKey, {
