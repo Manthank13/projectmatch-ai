@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
-import { callGeminiStructured } from '../geminiClient.js';
-import { calculateDeterministicTeamScore, ScorerCandidate } from '../hybridScorer.js';
+import { callGeminiStructured } from '../geminiClient';
+import { calculateDeterministicTeamScore, ScorerCandidate } from '../hybridScorer';
 
 export interface TeamRecommendationResponse {
   team_score: number;

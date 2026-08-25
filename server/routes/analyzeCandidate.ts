@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import { callGeminiStructured } from '../geminiClient.js';
+import { callGeminiStructured } from '../geminiClient';
 
 export interface CandidateAnalysisResponse {
   candidate_name: string;
