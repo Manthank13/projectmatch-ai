@@ -2,11 +2,10 @@ import React, { useState, useMemo, useEffect, useRef } from 'react';
 import { useData } from '../../context/DataContext';
 import { Student } from '../../types';
 import { StudentModal } from './StudentModal';
+import { TalentCard } from './TalentCard';
 import { DeleteConfirmModal } from '../modals/DeleteConfirmModal';
 import { GlassDropdown } from '../common/GlassDropdown';
 import { CampusNetworkGraph } from './CampusNetworkGraph';
-import { ProfileLinks } from '../common/ProfileLinks';
-import { getStudentAvatar } from '../../utils/avatar';
 
 interface TalentMatrixViewProps {
   onOpenAddStudent: () => void;
@@ -352,143 +351,15 @@ export const TalentMatrixView: React.FC<TalentMatrixViewProps> = ({
             </div>
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6 w-full min-w-0">
-              {filteredStudents.map((student, index) => {
-                const photoSrc = getStudentAvatar(student);
-                const isRealUser = !!student.isUserCreated;
-                const proofScore = student.proofOfWorkScore || 92;
-
-                return (
-                  <div
-                    key={student.id}
-                    style={{ animationDelay: `${index * 30}ms` }}
-                    className="glass-identity-card rounded-3xl p-6 h-full flex flex-col justify-between relative group hover:-translate-y-1.5 transition-all duration-300 w-full min-w-0"
-                  >
-                    <div>
-                      {/* Top Bar: Profile Photo & Header */}
-                      <div className="flex items-start justify-between gap-3 mb-3">
-                        <div className="flex items-center gap-3 min-w-0">
-                          {/* Photo with Luminous Halo */}
-                          <div
-                            onClick={() => setSelectedStudent(student)}
-                            className="relative w-14 h-14 rounded-2xl overflow-hidden border border-cyan-400/40 shadow-cyan-glow cursor-pointer group-hover:scale-105 transition-transform bg-surface flex-shrink-0"
-                          >
-                            <img
-                              src={photoSrc}
-                              alt={student.name}
-                              className="w-full h-full object-cover"
-                              loading="lazy"
-                            />
-                          </div>
-
-                          <div className="min-w-0">
-                            <div className="flex items-center gap-1.5">
-                              <h3
-                                onClick={() => setSelectedStudent(student)}
-                                className="font-headline font-extrabold text-on-surface text-base cursor-pointer hover:text-cyan-600 dark:hover:text-cyan-300 transition-colors truncate max-w-[130px]"
-                              >
-                                {student.name}
-                              </h3>
-                              {/* Synthetic Demo vs Real User Badge */}
-                              {isRealUser ? (
-                                <span className="px-1.5 py-0.5 rounded-md bg-mint-accent/15 border border-mint-accent/30 text-mint-accent text-[9px] font-headline font-extrabold flex-shrink-0" title="Verified User Identity">
-                                  VERIFIED
-                                </span>
-                              ) : (
-                                <span className="px-1.5 py-0.5 rounded-md bg-slate-500/10 dark:bg-white/10 border border-outline-variant text-on-surface-variant text-[9px] font-mono font-bold flex-shrink-0" title="Synthetic Benchmark Persona">
-                                  SYNTHETIC
-                                </span>
-                              )}
-                            </div>
-
-                            <p className="text-xs font-headline font-bold text-cyan-600 dark:text-cyan-400 truncate max-w-[150px] min-h-[18px]">
-                              {student.role}
-                            </p>
-                            <span className="text-[10px] font-body text-on-surface-variant block truncate max-w-[150px] min-h-[16px]">
-                              {student.department.split('-')[0]}
-                            </span>
-                          </div>
-                        </div>
-
-                        {/* Card Options (Edit/Delete) */}
-                        <div className="flex items-center gap-1 opacity-70 group-hover:opacity-100 flex-shrink-0">
-                          <button
-                            onClick={(e) => { e.stopPropagation(); onEditStudent(student); }}
-                            className="p-1.5 rounded-lg hover:bg-white/[0.08] text-on-surface-variant hover:text-cyan-600 dark:hover:text-cyan-300"
-                            title="Edit Profile"
-                          >
-                            <span className="material-symbols-outlined text-sm">edit</span>
-                          </button>
-                          <button
-                            onClick={(e) => { e.stopPropagation(); setStudentToDelete(student); }}
-                            className="p-1.5 rounded-lg hover:bg-error-container text-error"
-                            title="Remove Candidate"
-                          >
-                            <span className="material-symbols-outlined text-sm">delete</span>
-                          </button>
-                        </div>
-                      </div>
-
-                      {/* Proof of Work & Availability Badge */}
-                      <div className="flex items-center justify-between gap-2 mb-3 px-3 py-1.5 rounded-xl bg-surface-elevated/40 border border-outline-variant text-xs font-headline h-8">
-                        <div className="flex items-center gap-1.5">
-                          <div className="w-3.5 h-3.5 rounded-full border border-cyan-400 flex items-center justify-center circular-progress-glow">
-                            <span className="w-1.5 h-1.5 rounded-full bg-cyan-400" />
-                          </div>
-                          <span className="text-on-surface font-extrabold">{proofScore}%</span>
-                          <span className="text-[10px] text-on-surface-variant font-medium">PROOF</span>
-                        </div>
-                        <span className="text-[10px] text-on-surface-variant font-medium">
-                          {student.availabilityHours} hrs/wk
-                        </span>
-                      </div>
-
-                      {/* Personality One-Liner */}
-                      <p className="font-body text-xs text-on-surface-variant italic mb-3 min-h-[36px] line-clamp-2 leading-relaxed px-0.5">
-                        "{student.personalityLine}"
-                      </p>
-
-                      {/* Minimal Skill Capsules with Domain Dots */}
-                      <div className="flex flex-wrap gap-1.5 mb-3 min-h-[58px] items-start content-start">
-                        {student.skills.slice(0, 3).map(sk => (
-                          <span
-                            key={sk.name}
-                            className="skill-capsule px-2.5 py-1 rounded-full font-headline font-bold text-[11px] text-on-surface flex items-center gap-1.5"
-                          >
-                            <span
-                              className="w-1.5 h-1.5 rounded-full flex-shrink-0"
-                              style={{ backgroundColor: getDomainColor(sk.category) }}
-                            />
-                            <span className="truncate max-w-[90px]">{sk.name}</span>
-                            <strong className="text-cyan-600 dark:text-cyan-400 font-extrabold">{sk.score}</strong>
-                          </span>
-                        ))}
-                      </div>
-
-                      {/* Professional Links Bar */}
-                      <div className="mb-2 h-7 flex items-center">
-                        <ProfileLinks links={student.professionalLinks} size="sm" />
-                      </div>
-                    </div>
-
-                    {/* Card Footer: View Profile Trigger */}
-                    <div className="pt-3 border-t border-outline-variant flex items-center justify-between font-headline text-xs mt-2 h-10">
-                      <span className="text-on-surface-variant text-[11px] truncate max-w-[120px]">
-                        {student.campus?.split('(')[0] || 'Main Campus'}
-                      </span>
-
-                      <button
-                        onClick={() => setSelectedStudent(student)}
-                        className="text-cyan-600 dark:text-cyan-400 group-hover:text-cyan-500 dark:group-hover:text-cyan-300 font-extrabold flex items-center gap-1 transition-colors cursor-pointer"
-                      >
-                        <span>VIEW DOSSIER</span>
-                        <span className="material-symbols-outlined text-xs group-hover:translate-x-1 transition-transform">
-                          arrow_forward
-                        </span>
-                      </button>
-                    </div>
-                  </div>
-                );
-              })}
+              {filteredStudents.map((student) => (
+                <TalentCard
+                  key={student.id}
+                  student={student}
+                  onSelect={setSelectedStudent}
+                  onEdit={onEditStudent}
+                  onDelete={setStudentToDelete}
+                />
+              ))}
             </div>
           )}
         </div>
