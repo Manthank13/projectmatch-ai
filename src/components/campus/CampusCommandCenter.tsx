@@ -69,35 +69,38 @@ export const CampusCommandCenter: React.FC<CampusCommandCenterProps> = ({
       </div>
 
       {/* Sub-Tabs Selector */}
-      <div className="flex gap-2 p-1 rounded-2xl bg-surface-container w-fit border border-outline-variant/40 font-headline text-xs font-bold">
+      <div className="flex flex-wrap gap-1.5 p-1.5 rounded-2xl glass-filter-bar w-fit border border-outline-variant font-headline text-xs font-bold">
         <button
+          type="button"
           onClick={() => setActiveSubTab('map')}
-          className={`px-5 py-2 rounded-xl transition-all ${
+          className={`px-4 py-2 rounded-xl transition-all cursor-pointer ${
             activeSubTab === 'map'
-              ? 'bg-surface dark:bg-surface-container-high text-primary shadow-sm'
-              : 'text-on-surface-variant hover:text-on-surface'
+              ? 'bg-gradient-to-r from-sky-500/20 to-violet-500/20 dark:from-cyan-500/25 dark:to-violet-500/25 border border-sky-500/40 dark:border-cyan-400/40 text-slate-900 dark:text-cyan-300 shadow-sm font-extrabold'
+              : 'text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-900/5 dark:hover:bg-white/[0.06]'
           }`}
         >
           📍 Interactive Campus Map
         </button>
 
         <button
+          type="button"
           onClick={() => setActiveSubTab('departments')}
-          className={`px-5 py-2 rounded-xl transition-all ${
+          className={`px-4 py-2 rounded-xl transition-all cursor-pointer ${
             activeSubTab === 'departments'
-              ? 'bg-surface dark:bg-surface-container-high text-primary shadow-sm'
-              : 'text-on-surface-variant hover:text-on-surface'
+              ? 'bg-gradient-to-r from-sky-500/20 to-violet-500/20 dark:from-cyan-500/25 dark:to-violet-500/25 border border-sky-500/40 dark:border-cyan-400/40 text-slate-900 dark:text-cyan-300 shadow-sm font-extrabold'
+              : 'text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-900/5 dark:hover:bg-white/[0.06]'
           }`}
         >
           🏢 Academic Departments ({departments.length})
         </button>
 
         <button
+          type="button"
           onClick={() => setActiveSubTab('campuses')}
-          className={`px-5 py-2 rounded-xl transition-all ${
+          className={`px-4 py-2 rounded-xl transition-all cursor-pointer ${
             activeSubTab === 'campuses'
-              ? 'bg-surface dark:bg-surface-container-high text-primary shadow-sm'
-              : 'text-on-surface-variant hover:text-on-surface'
+              ? 'bg-gradient-to-r from-sky-500/20 to-violet-500/20 dark:from-cyan-500/25 dark:to-violet-500/25 border border-sky-500/40 dark:border-cyan-400/40 text-slate-900 dark:text-cyan-300 shadow-sm font-extrabold'
+              : 'text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-900/5 dark:hover:bg-white/[0.06]'
           }`}
         >
           🌐 Campus Locations ({campuses.length})

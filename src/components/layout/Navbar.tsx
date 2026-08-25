@@ -47,7 +47,7 @@ export const Navbar: React.FC<NavbarProps> = ({
   const userAvatar = user?.avatarUrl || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80';
 
   return (
-    <header className="sticky top-5 z-40 px-4 sm:px-8 max-w-7xl mx-auto w-full transition-all duration-300">
+    <header className="sticky top-5 z-40 app-page-container transition-all duration-300">
       <div className="glass-capsule rounded-full px-5 sm:px-7 py-3 flex justify-between items-center w-full">
         {/* Brand: Connected Abstract Node Logo */}
         <div 

@@ -59,15 +59,16 @@ export const ProjectArchiveView: React.FC<ProjectArchiveViewProps> = ({
       </div>
 
       {/* Filter Bar */}
-      <div className="flex overflow-x-auto pb-2 gap-2 w-full no-scrollbar">
+      <div className="flex overflow-x-auto pb-1 gap-1.5 w-full no-scrollbar p-1.5 rounded-full glass-filter-bar">
         {filters.map(f => (
           <button
             key={f}
+            type="button"
             onClick={() => setSelectedFilter(f)}
-            className={`px-4 py-2 rounded-full font-headline text-xs font-bold whitespace-nowrap transition-all ${
+            className={`px-4 py-2 rounded-full font-headline text-xs font-bold whitespace-nowrap transition-all cursor-pointer ${
               selectedFilter === f
-                ? 'bg-primary-container text-on-primary-container shadow-soft scale-105'
-                : 'bg-surface dark:bg-surface-container border border-outline-variant/60 text-on-surface-variant hover:bg-surface-variant'
+                ? 'bg-gradient-to-r from-sky-500/20 to-violet-500/20 dark:from-cyan-500/25 dark:to-violet-500/25 border border-sky-500/50 dark:border-cyan-400/50 text-slate-900 dark:text-cyan-300 shadow-sm scale-105 font-extrabold'
+                : 'text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-900/5 dark:hover:bg-white/[0.06]'
             }`}
           >
             {f}

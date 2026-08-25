@@ -6,12 +6,12 @@ interface CampusNetworkGraphProps {
 }
 
 const NETWORK_NODES = [
-  { id: 'AI / ML', label: 'AI / ML', x: 50, y: 22, color: '#00E5FF', glow: 'rgba(0, 229, 255, 0.4)' },
-  { id: 'CSE', label: 'CSE', x: 22, y: 40, color: '#8B5CF6', glow: 'rgba(139, 92, 246, 0.4)' },
-  { id: 'BIOTECH', label: 'BIOTECH', x: 78, y: 40, color: '#10B981', glow: 'rgba(16, 185, 129, 0.4)' },
-  { id: 'DESIGN', label: 'DESIGN', x: 30, y: 75, color: '#EC4899', glow: 'rgba(236, 72, 153, 0.4)' },
-  { id: 'ROBOTICS', label: 'ROBOTICS', x: 70, y: 75, color: '#F59E0B', glow: 'rgba(245, 158, 11, 0.4)' },
-  { id: 'ENVIRONMENT', label: 'ENV', x: 50, y: 90, color: '#34D399', glow: 'rgba(52, 211, 153, 0.4)' }
+  { id: 'AI / ML', label: 'AI / ML', x: 50, y: 22, color: '#00E5FF', lightColor: '#0284C7' },
+  { id: 'CSE', label: 'CSE', x: 22, y: 40, color: '#8B5CF6', lightColor: '#7C3AED' },
+  { id: 'BIOTECH', label: 'BIOTECH', x: 78, y: 40, color: '#10B981', lightColor: '#059669' },
+  { id: 'DESIGN', label: 'DESIGN', x: 30, y: 75, color: '#EC4899', lightColor: '#DB2777' },
+  { id: 'ROBOTICS', label: 'ROBOTICS', x: 70, y: 75, color: '#F59E0B', lightColor: '#D97706' },
+  { id: 'ENVIRONMENT', label: 'ENV', x: 50, y: 90, color: '#34D399', lightColor: '#10B981' }
 ];
 
 const CONNECTIONS = [
@@ -32,26 +32,9 @@ export const CampusNetworkGraph: React.FC<CampusNetworkGraphProps> = ({
   const [hoveredNode, setHoveredNode] = useState<string | null>(null);
 
   return (
-    <div className="glass-identity-card rounded-3xl p-6 relative overflow-hidden flex flex-col justify-between">
-      {/* Header */}
-      <div className="flex items-center justify-between mb-2">
-        <div className="flex items-center gap-2">
-          <span className="w-2 h-2 rounded-full bg-cyan-400 animate-pulse shadow-cyan-glow" />
-          <span className="text-[11px] font-headline font-extrabold uppercase tracking-widest text-cyan-400">
-            CAMPUS TALENT TOPOLOGY
-          </span>
-        </div>
-        <span className="text-[10px] font-headline text-on-surface-variant font-medium">
-          Click node to filter
-        </span>
-      </div>
-
-      <p className="text-xs font-body text-on-surface-variant mb-4">
-        Interdisciplinary connections across 6 major research clusters.
-      </p>
-
+    <div className="w-full flex flex-col justify-between">
       {/* SVG Connected Topology Graph */}
-      <div className="relative w-full h-44 bg-surface-container/40 rounded-2xl border border-outline-variant/30 overflow-hidden flex items-center justify-center">
+      <div className="relative w-full h-48 bg-surface-container/40 dark:bg-surface-container/40 rounded-2xl border border-outline-variant overflow-hidden flex items-center justify-center">
         <svg className="w-full h-full" viewBox="0 0 100 100" preserveAspectRatio="none">
           {/* Connection Lines */}
           {CONNECTIONS.map((conn, idx) => {
@@ -72,10 +55,11 @@ export const CampusNetworkGraph: React.FC<CampusNetworkGraphProps> = ({
                 y1={`${fromNode.y}%`}
                 x2={`${toNode.x}%`}
                 y2={`${toNode.y}%`}
-                stroke={isHighlighted ? '#00E5FF' : 'rgba(255, 255, 255, 0.08)'}
-                strokeWidth={isHighlighted ? '1.5' : '0.8'}
+                stroke={isHighlighted ? '#00E5FF' : 'currentColor'}
+                strokeOpacity={isHighlighted ? 0.9 : 0.15}
+                strokeWidth={isHighlighted ? '1.8' : '1'}
                 strokeDasharray={isHighlighted ? 'none' : '3 3'}
-                className="transition-all duration-300"
+                className="transition-all duration-300 text-outline"
               />
             );
           })}
@@ -94,26 +78,29 @@ export const CampusNetworkGraph: React.FC<CampusNetworkGraphProps> = ({
               onMouseLeave={() => setHoveredNode(null)}
               onClick={() => onSelectCategory(isSelected ? 'ALL' : node.id)}
               style={{ left: `${node.x}%`, top: `${node.y}%` }}
-              className={`absolute -translate-x-1/2 -translate-y-1/2 px-2.5 py-1 rounded-full text-[10px] font-headline font-bold transition-all duration-300 shadow-sm flex items-center gap-1.5 ${
+              className={`absolute -translate-x-1/2 -translate-y-1/2 px-2.5 py-1 rounded-full text-[10px] font-headline font-bold transition-all duration-300 shadow-sm flex items-center gap-1.5 whitespace-nowrap cursor-pointer ${
                 isSelected
-                  ? 'bg-cyan-500 text-space-black font-extrabold shadow-cyan-glow scale-110 ring-2 ring-cyan-300'
+                  ? 'bg-cyan-500 text-space-black dark:text-space-black font-extrabold shadow-cyan-glow scale-110 ring-2 ring-cyan-300'
                   : isHovered
-                  ? 'bg-white/10 text-on-surface border border-cyan-400/50 scale-105'
-                  : 'bg-space-surface/90 text-on-surface-variant border border-outline-variant'
+                  ? 'bg-surface-elevated text-on-surface border border-cyan-400/60 scale-105 shadow-sm'
+                  : 'bg-surface/90 text-on-surface-variant border border-outline-variant hover:border-cyan-400/40'
               }`}
             >
-              <span className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: node.color }} />
+              <span className="w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ backgroundColor: node.color }} />
               <span>{node.label}</span>
             </button>
           );
         })}
       </div>
 
-      <div className="pt-3 mt-3 border-t border-outline-variant/30 flex items-center justify-between text-[10px] font-headline text-on-surface-variant">
-        <span>● Active Network Nodes</span>
+      <div className="pt-3 mt-3 border-t border-outline-variant/40 flex items-center justify-between text-[10px] font-headline text-on-surface-variant">
+        <span className="flex items-center gap-1">
+          <span className="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-pulse" />
+          <span>Active Research Nodes</span>
+        </span>
         <button
           onClick={() => onSelectCategory('ALL')}
-          className="text-cyan-400 hover:underline font-bold"
+          className="text-cyan-500 dark:text-cyan-400 hover:underline font-bold"
         >
           Reset Filter
         </button>

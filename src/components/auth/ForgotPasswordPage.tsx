@@ -32,10 +32,10 @@ export const ForgotPasswordPage: React.FC<ForgotPasswordPageProps> = ({ onNaviga
 
   return (
     <AuthLayout onNavigateHome={() => onNavigate('architect')}>
-      <div className="space-y-6">
+      <div className="space-y-6 w-full">
         {/* Header */}
         <div className="space-y-2 text-center sm:text-left">
-          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-cyan-500/10 border border-cyan-400/20 text-cyan-300 text-[11px] font-headline font-bold">
+          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-cyan-500/10 border border-cyan-400/20 text-cyan-600 dark:text-cyan-300 text-[11px] font-headline font-bold">
             <span className="material-symbols-outlined text-sm">lock_reset</span>
             <span>CREDENTIAL RECOVERY</span>
           </div>
@@ -57,7 +57,7 @@ export const ForgotPasswordPage: React.FC<ForgotPasswordPageProps> = ({ onNaviga
 
         {isSubmitted ? (
           <div className="space-y-5 text-center animate-fadeIn py-2">
-            <div className="w-16 h-16 rounded-full bg-mint-accent/15 border border-mint-accent/30 text-mint-accent mx-auto flex items-center justify-center shadow-sm">
+            <div className="w-16 h-16 rounded-full bg-emerald-500/15 border border-emerald-500/30 text-emerald-600 dark:text-mint-accent mx-auto flex items-center justify-center shadow-sm">
               <span className="material-symbols-outlined text-3xl">mark_email_read</span>
             </div>
             <div className="space-y-1">
@@ -65,7 +65,7 @@ export const ForgotPasswordPage: React.FC<ForgotPasswordPageProps> = ({ onNaviga
                 RESET LINK DISPATCHED
               </h3>
               <p className="text-xs font-body text-on-surface-variant">
-                We've sent password reset instructions to <strong className="text-cyan-400">{email}</strong>.
+                We've sent password reset instructions to <strong className="text-cyan-600 dark:text-cyan-400">{email}</strong>.
               </p>
             </div>
 
@@ -73,7 +73,7 @@ export const ForgotPasswordPage: React.FC<ForgotPasswordPageProps> = ({ onNaviga
               <button
                 type="button"
                 onClick={() => onNavigate('reset-password')}
-                className="w-full py-3 px-6 rounded-2xl bg-gradient-to-r from-cyan-500 to-violet-600 hover:from-cyan-400 hover:to-violet-500 text-space-black font-headline text-xs font-extrabold shadow-cyan-glow hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center justify-center gap-2"
+                className="w-full h-12 px-6 rounded-2xl bg-gradient-to-r from-cyan-500 to-violet-600 hover:from-cyan-400 hover:to-violet-500 text-space-black font-headline text-xs font-extrabold shadow-cyan-glow hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center justify-center gap-2 cursor-pointer"
               >
                 <span>ENTER NEW PASSWORD →</span>
               </button>
@@ -81,7 +81,7 @@ export const ForgotPasswordPage: React.FC<ForgotPasswordPageProps> = ({ onNaviga
               <button
                 type="button"
                 onClick={() => onNavigate('login')}
-                className="w-full py-2.5 px-4 rounded-xl text-xs font-headline font-bold text-on-surface-variant hover:text-on-surface transition-colors"
+                className="w-full py-2.5 px-4 rounded-xl text-xs font-headline font-bold text-on-surface-variant hover:text-on-surface transition-colors cursor-pointer"
               >
                 ← Return to Sign In
               </button>
@@ -102,7 +102,7 @@ export const ForgotPasswordPage: React.FC<ForgotPasswordPageProps> = ({ onNaviga
                   value={email}
                   onChange={e => setEmail(e.target.value)}
                   placeholder="name@srm.edu.in"
-                  className="w-full pl-10 pr-4 py-3 rounded-2xl glass-input text-xs font-headline text-on-surface placeholder:text-on-surface-variant/50"
+                  className="w-full h-12 pl-10 pr-4 rounded-2xl glass-input text-xs font-headline text-on-surface placeholder:text-on-surface-variant/50"
                   required
                 />
               </div>
@@ -111,7 +111,7 @@ export const ForgotPasswordPage: React.FC<ForgotPasswordPageProps> = ({ onNaviga
             <button
               type="submit"
               disabled={isLoading}
-              className="w-full py-3.5 px-6 rounded-2xl bg-gradient-to-r from-cyan-500 to-violet-600 hover:from-cyan-400 hover:to-violet-500 text-space-black font-headline text-xs font-extrabold shadow-cyan-glow hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center justify-center gap-2 mt-2"
+              className="w-full h-12 px-6 rounded-2xl bg-gradient-to-r from-cyan-500 to-violet-600 hover:from-cyan-400 hover:to-violet-500 text-space-black font-headline text-xs font-extrabold shadow-cyan-glow hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center justify-center gap-2 mt-2 cursor-pointer"
             >
               {isLoading ? (
                 <>
@@ -129,7 +129,7 @@ export const ForgotPasswordPage: React.FC<ForgotPasswordPageProps> = ({ onNaviga
               <button
                 type="button"
                 onClick={() => onNavigate('login')}
-                className="text-xs font-headline font-bold text-on-surface-variant hover:text-on-surface transition-colors"
+                className="text-xs font-headline font-bold text-on-surface-variant hover:text-on-surface transition-colors cursor-pointer"
               >
                 ← Back to Login
               </button>

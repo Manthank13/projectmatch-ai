@@ -156,7 +156,7 @@ export const HeroInput: React.FC<HeroInputProps> = ({
             <button
               onClick={() => onArchitect(prompt)}
               disabled={isAnalyzing || !prompt.trim()}
-              className="w-full py-4 bg-on-surface text-surface dark:bg-primary-container dark:text-on-primary-container rounded-2xl font-headline text-sm font-bold shadow-soft hover:bg-primary hover:text-white dark:hover:bg-primary-fixed-dim transition-all flex items-center justify-center gap-2 active:scale-98 disabled:opacity-50"
+              className="w-full h-14 bg-gradient-to-r from-cyan-500 to-violet-600 hover:from-cyan-400 hover:to-violet-500 text-space-black rounded-2xl font-headline text-sm font-extrabold shadow-cyan-glow transition-all flex items-center justify-center gap-2 active:scale-98 disabled:opacity-50 cursor-pointer"
             >
               <span className="material-symbols-outlined text-lg">auto_awesome</span>
               <span>✦ ARCHITECT MY TEAM</span>

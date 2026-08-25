@@ -8,23 +8,25 @@ interface AuthLayoutProps {
 
 export const AuthLayout: React.FC<AuthLayoutProps> = ({ children, onNavigateHome }) => {
   return (
-    <div className="min-h-screen flex items-center justify-center p-4 sm:p-6 lg:p-12 relative z-10">
-      {/* Top Floating Return Action */}
+    <div className="min-h-screen flex flex-col justify-center items-center p-4 sm:p-6 lg:p-12 relative z-10 w-full">
+      {/* Top Return Action */}
       {onNavigateHome && (
-        <button
-          onClick={onNavigateHome}
-          className="fixed top-6 left-6 z-50 flex items-center gap-2 px-4 py-2 rounded-full glass-capsule hover:bg-white/[0.08] text-xs font-headline font-bold text-on-surface transition-all shadow-sm group"
-        >
-          <span className="material-symbols-outlined text-sm group-hover:-translate-x-1 transition-transform">
-            arrow_back
-          </span>
-          <span>RETURN TO CAMPUS</span>
-        </button>
+        <div className="w-full max-w-6xl mb-4 sm:mb-6 flex items-center justify-start">
+          <button
+            onClick={onNavigateHome}
+            className="inline-flex items-center gap-2 px-4 py-2 rounded-full glass-capsule hover:bg-white/[0.08] text-xs font-headline font-bold text-on-surface transition-all shadow-sm group cursor-pointer"
+          >
+            <span className="material-symbols-outlined text-sm group-hover:-translate-x-1 transition-transform">
+              arrow_back
+            </span>
+            <span>RETURN TO CAMPUS</span>
+          </button>
+        </div>
       )}
 
       <div className="w-full max-w-6xl grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
         {/* Left Side: Branding & Animated Talent Network */}
-        <div className="lg:col-span-6 hidden lg:flex flex-col justify-between h-full min-h-[580px] p-6 rounded-3xl glass-identity-card border border-outline-variant relative overflow-hidden">
+        <div className="lg:col-span-6 hidden lg:flex flex-col justify-between h-full min-h-[600px] p-8 rounded-3xl glass-identity-card border border-outline-variant relative overflow-hidden">
           <div className="flex items-center gap-3 relative z-10">
             <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-cyan-400 to-violet-500 p-0.5 shadow-cyan-glow flex items-center justify-center">
               <div className="w-full h-full bg-space-black rounded-[14px] flex items-center justify-center">
@@ -35,7 +37,7 @@ export const AuthLayout: React.FC<AuthLayoutProps> = ({ children, onNavigateHome
               <span className="font-headline font-extrabold text-on-surface tracking-wider text-base block">
                 PROJECTMATCH
               </span>
-              <span className="text-[10px] font-mono tracking-widest text-cyan-400 font-bold block -mt-0.5">
+              <span className="text-[10px] font-mono tracking-widest text-cyan-600 dark:text-cyan-400 font-bold block -mt-0.5">
                 AI TEAM ARCHITECT
               </span>
             </div>
@@ -43,10 +45,10 @@ export const AuthLayout: React.FC<AuthLayoutProps> = ({ children, onNavigateHome
 
           <AuthNodesVisual />
 
-          <div className="flex items-center justify-between text-[11px] font-headline text-on-surface-variant pt-4 border-t border-outline-variant/40 relative z-10">
+          <div className="flex items-center justify-between text-[11px] font-headline text-on-surface-variant pt-4 border-t border-outline-variant relative z-10">
             <span>SRM INNOVATION GRID</span>
-            <span className="flex items-center gap-1 text-mint-accent font-bold">
-              <span className="w-1.5 h-1.5 rounded-full bg-mint-accent animate-pulse" />
+            <span className="flex items-center gap-1 text-emerald-600 dark:text-mint-accent font-bold">
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 dark:bg-mint-accent animate-pulse" />
               TALENT NETWORK ACTIVE
             </span>
           </div>

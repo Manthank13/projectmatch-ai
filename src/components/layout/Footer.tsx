@@ -2,11 +2,11 @@ import React from 'react';
 
 export const Footer: React.FC = () => {
   return (
-    <footer className="w-full border-t border-outline-variant/40 bg-space-black/80 backdrop-blur-xl py-8 px-4 sm:px-8 mt-auto z-20">
-      <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4 font-headline text-xs">
+    <footer className="w-full border-t border-outline-variant bg-surface/80 dark:bg-space-black/80 backdrop-blur-xl py-8 mt-auto z-20">
+      <div className="app-page-container flex flex-col sm:flex-row items-center justify-between gap-4 font-headline text-xs">
         {/* Brand & Subtext */}
         <div className="flex items-center gap-3">
-          <div className="w-6 h-6 rounded-lg bg-cyan-500/20 border border-cyan-400/30 flex items-center justify-center text-cyan-400 text-sm font-bold shadow-cyan-glow">
+          <div className="w-6 h-6 rounded-lg bg-cyan-500/20 border border-cyan-400/30 flex items-center justify-center text-cyan-600 dark:text-cyan-400 text-sm font-bold shadow-cyan-glow">
             ✦
           </div>
           <div>
@@ -25,8 +25,8 @@ export const Footer: React.FC = () => {
         </p>
 
         {/* System Status Pill */}
-        <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-white/[0.03] border border-outline-variant text-[10px] font-bold text-on-surface-variant">
-          <span className="w-1.5 h-1.5 rounded-full bg-mint-accent shadow-mint-glow animate-pulse" />
+        <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-surface-elevated/60 border border-outline-variant text-[10px] font-bold text-on-surface-variant">
+          <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 dark:bg-mint-accent animate-pulse" />
           <span>GRID TELEMETRY ONLINE</span>
         </div>
       </div>

@@ -179,7 +179,7 @@ const MainApp: React.FC = () => {
           />
 
           {/* Main Content Area */}
-          <main className="flex-1 w-full max-w-7xl mx-auto px-4 sm:px-8 pt-4 pb-16 relative z-10">
+          <main className="app-page-container flex-1 pt-4 pb-16 relative z-10">
             {currentRoute === 'architect' && (
               <>
                 {errorMessage && (
