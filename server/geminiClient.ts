@@ -9,8 +9,8 @@ export function getGeminiClient(): GoogleGenAI {
   return new GoogleGenAI({ apiKey });
 }
 
-// Models to try in order
-export const GEMINI_MODELS = ['gemini-2.5-flash', 'gemini-3.6-flash', 'gemini-3.7-flash', 'gemini-3.5-flash-lite'];
+// Models to try in order (Gemini Flash)
+export const GEMINI_MODELS = ['gemini-2.5-flash', 'gemini-1.5-flash', 'gemini-2.0-flash', 'gemini-2.5-flash-lite'];
 
 /**
  * Robust helper to call Gemini with structured JSON output and automatic model fallback
