@@ -1,4 +1,4 @@
-// Web Audio API Synthesizer for pleasant UI sound effects
+// Web Audio API Synthesizer for UI sound effects
 let audioCtx: AudioContext | null = null;
 let isMuted = false;
 
@@ -11,7 +11,7 @@ function getAudioContext(): AudioContext | null {
     }
   }
   if (audioCtx && audioCtx.state === 'suspended') {
-    audioCtx.resume();
+    audioCtx.resume().catch(() => {});
   }
   return audioCtx;
 }
@@ -46,8 +46,8 @@ export function playClickSound() {
 
     osc.start();
     osc.stop(ctx.currentTime + 0.05);
-  } catch (e) {
-    console.debug('Audio not allowed yet', e);
+  } catch {
+    // Silent catch for autoplay constraints
   }
 }
 
@@ -72,8 +72,8 @@ export function playHoverSound() {
 
     osc.start();
     osc.stop(ctx.currentTime + 0.03);
-  } catch (e) {
-    console.debug('Audio error', e);
+  } catch {
+    // Silent catch for autoplay constraints
   }
 }
 
@@ -99,8 +99,8 @@ export function playScanBlip(stepIndex: number = 0) {
 
     osc.start();
     osc.stop(ctx.currentTime + 0.12);
-  } catch (e) {
-    console.debug('Audio error', e);
+  } catch {
+    // Silent catch for autoplay constraints
   }
 }
 
@@ -127,8 +127,8 @@ export function playSuccessChime() {
       osc.start(ctx.currentTime + idx * 0.08);
       osc.stop(ctx.currentTime + idx * 0.08 + 0.45);
     });
-  } catch (e) {
-    console.debug('Audio error', e);
+  } catch {
+    // Silent catch for autoplay constraints
   }
 }
 
@@ -156,7 +156,7 @@ export function playWhoosh() {
 
     osc.start();
     osc.stop(ctx.currentTime + 0.15);
-  } catch (e) {
-    console.debug('Audio error', e);
+  } catch {
+    // Silent catch for autoplay constraints
   }
 }

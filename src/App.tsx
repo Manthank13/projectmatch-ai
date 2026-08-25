@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, Suspense } from 'react';
 import { DataProvider, useData } from './context/DataContext';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { Navbar } from './components/layout/Navbar';
@@ -6,11 +6,6 @@ import { Footer } from './components/layout/Footer';
 import { HeroInput } from './components/architect/HeroInput';
 import { AnalysisSequence } from './components/architect/AnalysisSequence';
 import { ArchitectDashboard } from './components/architect/ArchitectDashboard';
-import { TalentMatrixView } from './components/talent/TalentMatrixView';
-import { ProjectArchiveView } from './components/projects/ProjectArchiveView';
-import { CampusCommandCenter } from './components/campus/CampusCommandCenter';
-import { HowItWorksView } from './components/howitworks/HowItWorksView';
-import { ProfilePage } from './components/profile/ProfilePage';
 import { StudentModal } from './components/talent/StudentModal';
 import { MultiStepProfileModal } from './components/modals/MultiStepProfileModal';
 import { ProjectFormModal } from './components/modals/ProjectFormModal';
@@ -18,12 +13,19 @@ import { DepartmentModal } from './components/modals/DepartmentModal';
 import { CampusModal } from './components/modals/CampusModal';
 import { AdminControlModal } from './components/modals/AdminControlModal';
 
-// Auth Pages
-import { LoginPage } from './components/auth/LoginPage';
-import { SignUpPage } from './components/auth/SignUpPage';
-import { ForgotPasswordPage } from './components/auth/ForgotPasswordPage';
-import { ResetPasswordPage } from './components/auth/ResetPasswordPage';
-import { VerifyEmailPage } from './components/auth/VerifyEmailPage';
+// Code-split heavy views for optimal loading performance
+const TalentMatrixView = React.lazy(() => import('./components/talent/TalentMatrixView').then(m => ({ default: m.TalentMatrixView })));
+const ProjectArchiveView = React.lazy(() => import('./components/projects/ProjectArchiveView').then(m => ({ default: m.ProjectArchiveView })));
+const CampusCommandCenter = React.lazy(() => import('./components/campus/CampusCommandCenter').then(m => ({ default: m.CampusCommandCenter })));
+const HowItWorksView = React.lazy(() => import('./components/howitworks/HowItWorksView').then(m => ({ default: m.HowItWorksView })));
+const ProfilePage = React.lazy(() => import('./components/profile/ProfilePage').then(m => ({ default: m.ProfilePage })));
+
+// Code-split Auth Pages
+const LoginPage = React.lazy(() => import('./components/auth/LoginPage').then(m => ({ default: m.LoginPage })));
+const SignUpPage = React.lazy(() => import('./components/auth/SignUpPage').then(m => ({ default: m.SignUpPage })));
+const ForgotPasswordPage = React.lazy(() => import('./components/auth/ForgotPasswordPage').then(m => ({ default: m.ForgotPasswordPage })));
+const ResetPasswordPage = React.lazy(() => import('./components/auth/ResetPasswordPage').then(m => ({ default: m.ResetPasswordPage })));
+const VerifyEmailPage = React.lazy(() => import('./components/auth/VerifyEmailPage').then(m => ({ default: m.VerifyEmailPage })));
 
 import { recommendTeamAI } from './services/aiService';
 import { Student, ProjectArchetype, Department, Campus, TeamArchitectResult } from './types';
@@ -42,92 +44,123 @@ type AppRoute =
   | 'reset-password'
   | 'verify-email';
 
+const RouteLoadingFallback = () => (
+  <div className="min-h-[50vh] flex flex-col items-center justify-center p-8 space-y-4 animate-fadeIn">
+    <div className="w-10 h-10 rounded-full border-2 border-cyan-400/30 border-t-cyan-400 animate-spin" />
+    <span className="text-xs font-headline font-bold text-on-surface-variant tracking-wider uppercase">
+      Loading Grid Node...
+    </span>
+  </div>
+);
+
 const MainApp: React.FC = () => {
   const { students, projects, updateStudent, addStudent } = useData();
   const { user, isAuthenticated } = useAuth();
 
   // Route state initialized from pathname
   const [currentRoute, setCurrentRoute] = useState<AppRoute>(() => {
-    const path = window.location.pathname.replace(/^\//, '').toLowerCase();
-    if (path === 'login') return 'login';
-    if (path === 'signup') return 'signup';
-    if (path === 'forgot-password') return 'forgot-password';
-    if (path === 'reset-password') return 'reset-password';
-    if (path === 'verify-email') return 'verify-email';
-    if (path === 'profile') return 'profile';
-    if (path === 'talent') return 'talent';
-    if (path === 'projects') return 'projects';
-    if (path === 'campus') return 'campus';
-    if (path === 'how-it-works') return 'how-it-works';
+    if (typeof window !== 'undefined') {
+      const path = window.location.pathname.replace(/^\//, '');
+      const validRoutes: AppRoute[] = [
+        'architect', 'talent', 'projects', 'campus', 'how-it-works', 'profile',
+        'login', 'signup', 'forgot-password', 'reset-password', 'verify-email'
+      ];
+      if (validRoutes.includes(path as AppRoute)) {
+        return path as AppRoute;
+      }
+    }
     return 'architect';
   });
 
-  // Sync browser History API
+  // Browser History pushState sync
   const navigateTo = (route: string) => {
     const validRoute = route as AppRoute;
     setCurrentRoute(validRoute);
-    window.history.pushState(null, '', `/${validRoute === 'architect' ? '' : validRoute}`);
+    if (typeof window !== 'undefined') {
+      const targetPath = validRoute === 'architect' ? '/' : `/${validRoute}`;
+      if (window.location.pathname !== targetPath) {
+        window.history.pushState({ route: validRoute }, '', targetPath);
+      }
+    }
     window.scrollTo({ top: 0, behavior: 'smooth' });
+    playWhoosh();
   };
 
+  // Sync with browser back/forward buttons
   useEffect(() => {
-    const handlePopState = () => {
-      const path = window.location.pathname.replace(/^\//, '').toLowerCase();
-      if (
-        path === 'login' ||
-        path === 'signup' ||
-        path === 'forgot-password' ||
-        path === 'reset-password' ||
-        path === 'verify-email' ||
-        path === 'profile' ||
-        path === 'talent' ||
-        path === 'projects' ||
-        path === 'campus' ||
-        path === 'how-it-works'
-      ) {
-        setCurrentRoute(path as AppRoute);
+    const handlePopState = (e: PopStateEvent) => {
+      if (e.state && e.state.route) {
+        setCurrentRoute(e.state.route);
       } else {
-        setCurrentRoute('architect');
+        const path = window.location.pathname.replace(/^\//, '') || 'architect';
+        setCurrentRoute(path as AppRoute);
       }
     };
     window.addEventListener('popstate', handlePopState);
     return () => window.removeEventListener('popstate', handlePopState);
   }, []);
 
-  // Sync authenticated user into the talent pool as a verified user profile
+  // Sync Authenticated user into student dataset
   useEffect(() => {
-    if (user && user.id) {
-      const existing = students.find(s => s.id === user.id || s.contactEmail === user.email);
-      if (existing) {
-        // Update with latest user attributes
-        updateStudent(existing.id, {
-          name: user.fullName || existing.name,
-          role: user.role || existing.role,
-          department: user.department || existing.department,
-          campus: user.campus || existing.campus,
-          avatarUrl: user.avatarUrl,
-          bio: user.bio || existing.bio,
-          skills: user.skills && user.skills.length > 0 ? user.skills : existing.skills,
-          availabilityHours: user.availabilityHours || existing.availabilityHours,
+    if (user && isAuthenticated) {
+      const existingStudent = students.find(s => s.id === user.id);
+      if (!existingStudent) {
+        const newStudentModel: Student = {
+          id: user.id,
+          name: user.fullName || user.email.split('@')[0],
+          department: user.department || 'Computer Science & Engineering',
+          campus: user.campus || 'Main Campus (Kattankulathur)',
+          year: '3rd Year (Junior)',
+          role: user.role || 'Student Technologist',
+          availabilityHours: user.availabilityHours || 14,
+          individualFitScore: 92,
+          marginalTeamValue: 88,
+          uniqueContribution: user.bio || 'Full-Stack Execution & System Architecture',
+          personalityLine: 'Ready to build high-impact projects.',
+          avatar: user.avatarUrl || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80',
+          avatarUrl: user.avatarUrl || undefined,
+          campusZone: 'CAMPUS INNOVATION HUB',
+          bio: user.bio || 'Passionate student technologist ready to build high-impact projects.',
+          skills: user.skills && user.skills.length > 0 ? user.skills : [
+            { name: 'Python', score: 9, category: 'AI / ML' },
+            { name: 'Full-Stack Engineering', score: 9, category: 'CSE' },
+            { name: 'System Architecture', score: 8, category: 'CSE' }
+          ],
+          domains: ['CSE', 'AI / ML'],
+          pastProjects: [],
+          badges: ['Verified Technologist'],
+          professionalLinks: {
+            github: user.githubUrl || undefined,
+            linkedin: user.linkedinUrl || undefined,
+            portfolio: user.portfolioUrl || undefined
+          },
           isUserCreated: true,
-          isSyntheticDemo: false
+          isSyntheticDemo: false,
+          isDemo: false
+        };
+        addStudent(newStudentModel);
+      } else if (user.avatarUrl && existingStudent.avatarUrl !== user.avatarUrl) {
+        updateStudent(existingStudent.id, {
+          avatarUrl: user.avatarUrl,
+          name: user.fullName || existingStudent.name,
+          role: user.role || existingStudent.role,
+          department: user.department || existingStudent.department,
+          campus: user.campus || existingStudent.campus,
+          bio: user.bio || existingStudent.bio,
+          skills: user.skills && user.skills.length > 0 ? user.skills : existingStudent.skills
         });
       }
     }
-  }, [user]);
+  }, [user, isAuthenticated, students]);
 
-  const [prompt, setPrompt] = useState(
-    "We're building an AI platform that detects ocean pollution using satellite and environmental data."
-  );
-
-  // Architect State
+  // Architect Pipeline State
+  const [prompt, setPrompt] = useState('');
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [analysisResult, setAnalysisResult] = useState<TeamArchitectResult | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
-  // Modal States
+  // Modal target state
   const [studentModalTarget, setStudentModalTarget] = useState<Student | null>(null);
-
   const [isStudentFormOpen, setIsStudentFormOpen] = useState(false);
   const [editingStudent, setEditingStudent] = useState<Student | null>(null);
 
@@ -142,72 +175,75 @@ const MainApp: React.FC = () => {
 
   const [isAdminOpen, setIsAdminOpen] = useState(false);
 
-  // Trigger squad architecting
+  // Trigger Team Architect Pipeline
   const handleArchitect = async (customPrompt?: string) => {
     const textToAnalyze = customPrompt || prompt;
     if (!textToAnalyze.trim()) return;
 
-    playWhoosh();
     setIsAnalyzing(true);
-    setAnalysisResult(null);
     setErrorMessage(null);
-    navigateTo('architect');
+    playChime();
 
     try {
-      const realResult = await recommendTeamAI(textToAnalyze, students, projects);
-      setAnalysisResult(realResult);
+      const result = await recommendTeamAI(textToAnalyze, students, projects);
+      setAnalysisResult(result);
       setIsAnalyzing(false);
       playSuccess();
     } catch (err: any) {
-      console.error('[App] Gemini AI Execution Error:', err);
       setIsAnalyzing(false);
-      setErrorMessage(err?.message || 'Failed to reach Gemini API. Please check your GEMINI_API_KEY.');
+      setErrorMessage(err.message || 'AI team synthesis failed. Please try again.');
     }
   };
 
   const handleArchitectProject = (proj: ProjectArchetype) => {
     setPrompt(proj.description);
+    navigateTo('architect');
     handleArchitect(proj.description);
   };
 
-  const isAuthRoute = ['login', 'signup', 'forgot-password', 'reset-password', 'verify-email'].includes(currentRoute);
+  const isAuthRoute = [
+    'login',
+    'signup',
+    'forgot-password',
+    'reset-password',
+    'verify-email'
+  ].includes(currentRoute);
 
   return (
-    <div className="min-h-screen flex flex-col bg-background text-on-background transition-colors duration-300 font-body relative">
-      {/* Ambient background mesh */}
-      <div className="ambient-network-bg" />
+    <div className="min-h-screen flex flex-col bg-background text-on-background selection:bg-cyan-500/25 selection:text-cyan-300">
+      {/* Auth Pages (Clean fullscreen layouts) */}
+      <Suspense fallback={<RouteLoadingFallback />}>
+        {currentRoute === 'login' && (
+          <LoginPage
+            onNavigate={navigateTo}
+            onSuccess={() => navigateTo('architect')}
+          />
+        )}
 
-      {/* Render Authentication Routes */}
-      {currentRoute === 'login' && (
-        <LoginPage
-          onNavigate={navigateTo}
-          onSuccess={() => navigateTo('architect')}
-        />
-      )}
+        {currentRoute === 'signup' && (
+          <SignUpPage
+            onNavigate={navigateTo}
+          />
+        )}
 
-      {currentRoute === 'signup' && (
-        <SignUpPage
-          onNavigate={navigateTo}
-        />
-      )}
+        {currentRoute === 'forgot-password' && (
+          <ForgotPasswordPage
+            onNavigate={navigateTo}
+          />
+        )}
 
-      {currentRoute === 'forgot-password' && (
-        <ForgotPasswordPage
-          onNavigate={navigateTo}
-        />
-      )}
+        {currentRoute === 'reset-password' && (
+          <ResetPasswordPage
+            onNavigate={navigateTo}
+          />
+        )}
 
-      {currentRoute === 'reset-password' && (
-        <ResetPasswordPage
-          onNavigate={navigateTo}
-        />
-      )}
-
-      {currentRoute === 'verify-email' && (
-        <VerifyEmailPage
-          onNavigate={navigateTo}
-        />
-      )}
+        {currentRoute === 'verify-email' && (
+          <VerifyEmailPage
+            onNavigate={navigateTo}
+          />
+        )}
+      </Suspense>
 
       {/* Render Main Application Routes */}
       {!isAuthRoute && (
@@ -233,105 +269,107 @@ const MainApp: React.FC = () => {
 
           {/* Main Content Area */}
           <main className="app-page-container flex-1 pt-4 pb-16 relative z-10">
-            {currentRoute === 'architect' && (
-              <>
-                {errorMessage && (
-                  <div className="max-w-2xl mx-auto my-6 p-6 rounded-3xl bg-error-container border border-error text-on-error-container space-y-3 animate-fadeIn">
-                    <div className="flex items-center gap-3">
-                      <span className="material-symbols-outlined text-3xl text-error">error</span>
-                      <div>
-                        <h3 className="font-headline font-extrabold text-base">
-                          AI CONNECTION ERROR
-                        </h3>
-                        <p className="text-xs font-body opacity-90">
-                          {errorMessage}
-                        </p>
+            <Suspense fallback={<RouteLoadingFallback />}>
+              {currentRoute === 'architect' && (
+                <>
+                  {errorMessage && (
+                    <div className="max-w-2xl mx-auto my-6 p-6 rounded-3xl bg-error-container border border-error text-on-error-container space-y-3 animate-fadeIn">
+                      <div className="flex items-center gap-3">
+                        <span className="material-symbols-outlined text-3xl text-error">error</span>
+                        <div>
+                          <h3 className="font-headline font-extrabold text-base">
+                            AI CONNECTION ERROR
+                          </h3>
+                          <p className="text-xs font-body opacity-90">
+                            {errorMessage}
+                          </p>
+                        </div>
+                      </div>
+                      <div className="flex items-center justify-end gap-3 pt-2">
+                        <button
+                          onClick={() => setErrorMessage(null)}
+                          className="px-4 py-1.5 rounded-full hover:bg-white/10 text-xs font-headline font-bold"
+                        >
+                          Dismiss
+                        </button>
+                        <button
+                          onClick={() => handleArchitect(prompt)}
+                          className="px-5 py-1.5 rounded-full bg-error text-white font-headline text-xs font-extrabold shadow-sm hover:scale-105"
+                        >
+                          Retry Analysis
+                        </button>
                       </div>
                     </div>
-                    <div className="flex items-center justify-end gap-3 pt-2">
-                      <button
-                        onClick={() => setErrorMessage(null)}
-                        className="px-4 py-1.5 rounded-full hover:bg-white/10 text-xs font-headline font-bold"
-                      >
-                        Dismiss
-                      </button>
-                      <button
-                        onClick={() => handleArchitect(prompt)}
-                        className="px-5 py-1.5 rounded-full bg-error text-white font-headline text-xs font-extrabold shadow-sm hover:scale-105"
-                      >
-                        Retry Analysis
-                      </button>
-                    </div>
-                  </div>
-                )}
+                  )}
 
-                {isAnalyzing ? (
-                  <AnalysisSequence onComplete={() => {}} />
-                ) : analysisResult ? (
-                  <ArchitectDashboard
-                    result={analysisResult}
-                    onReArchitect={() => {
-                      setAnalysisResult(null);
-                      playChime();
-                    }}
-                    onSelectStudent={s => setStudentModalTarget(s)}
-                  />
-                ) : (
-                  <HeroInput
-                    prompt={prompt}
-                    setPrompt={setPrompt}
-                    onArchitect={handleArchitect}
-                    onExploreTalent={() => navigateTo('talent')}
-                    isAnalyzing={isAnalyzing}
-                  />
-                )}
-              </>
-            )}
+                  {isAnalyzing ? (
+                    <AnalysisSequence onComplete={() => {}} />
+                  ) : analysisResult ? (
+                    <ArchitectDashboard
+                      result={analysisResult}
+                      onReArchitect={() => {
+                        setAnalysisResult(null);
+                        playChime();
+                      }}
+                      onSelectStudent={s => setStudentModalTarget(s)}
+                    />
+                  ) : (
+                    <HeroInput
+                      prompt={prompt}
+                      setPrompt={setPrompt}
+                      onArchitect={handleArchitect}
+                      onExploreTalent={() => navigateTo('talent')}
+                      isAnalyzing={isAnalyzing}
+                    />
+                  )}
+                </>
+              )}
 
-            {currentRoute === 'talent' && (
-              <TalentMatrixView
-                onOpenAddStudent={() => {
-                  if (!isAuthenticated) {
-                    navigateTo('login');
-                  } else {
-                    setEditingStudent(null);
-                    setIsStudentFormOpen(true);
-                  }
-                }}
-                onOpenAddProject={() => { setEditingProject(null); setIsProjectFormOpen(true); }}
-                onEditStudent={s => { setEditingStudent(s); setIsStudentFormOpen(true); }}
-                onNavigateToArchitect={() => navigateTo('architect')}
-              />
-            )}
+              {currentRoute === 'talent' && (
+                <TalentMatrixView
+                  onOpenAddStudent={() => {
+                    if (!isAuthenticated) {
+                      navigateTo('login');
+                    } else {
+                      setEditingStudent(null);
+                      setIsStudentFormOpen(true);
+                    }
+                  }}
+                  onOpenAddProject={() => { setEditingProject(null); setIsProjectFormOpen(true); }}
+                  onEditStudent={s => { setEditingStudent(s); setIsStudentFormOpen(true); }}
+                  onNavigateToArchitect={() => navigateTo('architect')}
+                />
+              )}
 
-            {currentRoute === 'projects' && (
-              <ProjectArchiveView
-                onOpenAddProject={() => { setEditingProject(null); setIsProjectFormOpen(true); }}
-                onEditProject={p => { setEditingProject(p); setIsProjectFormOpen(true); }}
-                onArchitectProject={handleArchitectProject}
-              />
-            )}
+              {currentRoute === 'projects' && (
+                <ProjectArchiveView
+                  onOpenAddProject={() => { setEditingProject(null); setIsProjectFormOpen(true); }}
+                  onEditProject={p => { setEditingProject(p); setIsProjectFormOpen(true); }}
+                  onArchitectProject={handleArchitectProject}
+                />
+              )}
 
-            {currentRoute === 'campus' && (
-              <CampusCommandCenter
-                onOpenAddDepartment={() => { setEditingDept(null); setIsDeptFormOpen(true); }}
-                onOpenAddCampus={() => { setEditingCampus(null); setIsCampusFormOpen(true); }}
-                onEditDepartment={d => { setEditingDept(d); setIsDeptFormOpen(true); }}
-                onEditCampus={c => { setEditingCampus(c); setIsCampusFormOpen(true); }}
-                onSelectStudent={s => setStudentModalTarget(s)}
-              />
-            )}
+              {currentRoute === 'campus' && (
+                <CampusCommandCenter
+                  onOpenAddDepartment={() => { setEditingDept(null); setIsDeptFormOpen(true); }}
+                  onOpenAddCampus={() => { setEditingCampus(null); setIsCampusFormOpen(true); }}
+                  onEditDepartment={d => { setEditingDept(d); setIsDeptFormOpen(true); }}
+                  onEditCampus={c => { setEditingCampus(c); setIsCampusFormOpen(true); }}
+                  onSelectStudent={s => setStudentModalTarget(s)}
+                />
+              )}
 
-            {currentRoute === 'how-it-works' && (
-              <HowItWorksView />
-            )}
+              {currentRoute === 'how-it-works' && (
+                <HowItWorksView />
+              )}
 
-            {currentRoute === 'profile' && (
-              <ProfilePage
-                onNavigateToTalent={() => navigateTo('talent')}
-                onNavigateToLogin={() => navigateTo('login')}
-              />
-            )}
+              {currentRoute === 'profile' && (
+                <ProfilePage
+                  onNavigateToTalent={() => navigateTo('talent')}
+                  onNavigateToLogin={() => navigateTo('login')}
+                />
+              )}
+            </Suspense>
           </main>
 
           {/* Footer */}
@@ -398,14 +436,14 @@ const MainApp: React.FC = () => {
   );
 };
 
-export function App() {
+export const App: React.FC = () => {
   return (
-    <DataProvider>
-      <AuthProvider>
+    <AuthProvider>
+      <DataProvider>
         <MainApp />
-      </AuthProvider>
-    </DataProvider>
+      </DataProvider>
+    </AuthProvider>
   );
-}
+};
 
 export default App;
