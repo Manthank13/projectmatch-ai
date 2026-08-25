@@ -3,8 +3,8 @@ import { useData } from '../../context/DataContext';
 import { useAuth } from '../../context/AuthContext';
 
 interface NavbarProps {
-  activeTab: 'architect' | 'talent' | 'projects' | 'campus' | 'how-it-works';
-  setActiveTab: (tab: 'architect' | 'talent' | 'projects' | 'campus' | 'how-it-works') => void;
+  activeTab: 'architect' | 'talent' | 'projects' | 'campus' | 'how-it-works' | 'profile';
+  setActiveTab: (tab: 'architect' | 'talent' | 'projects' | 'campus' | 'how-it-works' | 'profile') => void;
   onOpenAddStudent: () => void;
   onOpenAddProject: () => void;
   onOpenAddDepartment: () => void;
@@ -55,16 +55,16 @@ export const Navbar: React.FC<NavbarProps> = ({
           className="flex items-center gap-3 cursor-pointer group"
         >
           <div className="relative w-9 h-9 rounded-xl bg-gradient-to-tr from-cyan-500/20 via-violet-500/20 to-cyan-400/30 border border-cyan-400/30 flex items-center justify-center shadow-cyan-glow group-hover:scale-105 transition-all">
-            <span className="material-symbols-outlined text-cyan-400 text-xl font-bold animate-pulse">
+            <span className="material-symbols-outlined text-cyan-600 dark:text-cyan-400 text-xl font-bold animate-pulse">
               grain
             </span>
           </div>
           <div className="flex flex-col">
             <div className="flex items-center gap-2">
-              <span className="text-lg sm:text-xl font-extrabold font-headline text-on-surface tracking-tight group-hover:text-cyan-400 transition-colors">
+              <span className="text-lg sm:text-xl font-extrabold font-headline text-on-surface tracking-tight group-hover:text-cyan-600 dark:group-hover:text-cyan-400 transition-colors">
                 PROJECTMATCH
               </span>
-              <span className="hidden sm:inline-block px-2 py-0.5 rounded-full bg-cyan-500/10 border border-cyan-500/20 text-cyan-400 text-[9px] font-bold font-headline tracking-widest uppercase">
+              <span className="hidden sm:inline-block px-2 py-0.5 rounded-full bg-cyan-500/10 border border-cyan-500/20 text-cyan-600 dark:text-cyan-400 text-[9px] font-bold font-headline tracking-widest uppercase">
                 AI OS
               </span>
             </div>
@@ -75,17 +75,17 @@ export const Navbar: React.FC<NavbarProps> = ({
         </div>
 
         {/* Center Desktop Navigation: Minimalist Glass Pills with Active Glow */}
-        <nav className="hidden lg:flex items-center gap-1 p-1 rounded-full bg-surface-container-low/40 border border-outline-variant/30 font-headline text-xs font-bold">
+        <nav className="hidden lg:flex items-center gap-1 p-1 rounded-full bg-surface-container-low/40 border border-outline-variant font-headline text-xs font-bold">
           {navItems.map((item) => {
             const isActive = activeTab === item.id;
             return (
               <button
                 key={item.id}
                 onClick={() => setActiveTab(item.id)}
-                className={`relative flex items-center gap-1.5 px-4 py-2 rounded-full transition-all duration-300 ${
+                className={`relative flex items-center gap-1.5 px-4 py-2 rounded-full transition-all duration-300 cursor-pointer ${
                   isActive
-                    ? 'bg-cyan-500/15 border border-cyan-400/40 text-cyan-300 shadow-cyan-glow font-extrabold'
-                    : 'text-on-surface-variant hover:text-on-surface hover:bg-white/[0.04]'
+                    ? 'bg-gradient-to-r from-sky-500/20 to-violet-500/20 dark:from-cyan-500/25 dark:to-violet-500/25 border border-sky-500/50 dark:border-cyan-400/50 text-slate-900 dark:text-cyan-300 shadow-sm font-extrabold'
+                    : 'text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-900/5 dark:hover:bg-white/[0.06]'
                 }`}
               >
                 {isActive && (
@@ -104,9 +104,9 @@ export const Navbar: React.FC<NavbarProps> = ({
           <div className="relative">
             <button
               onClick={() => setShowCreateMenu(!showCreateMenu)}
-              className="flex items-center gap-1.5 px-3.5 sm:px-4 py-2 rounded-full bg-white/[0.04] hover:bg-cyan-500/10 border border-outline-variant hover:border-cyan-400/50 text-on-surface hover:text-cyan-300 font-headline text-xs font-bold transition-all shadow-sm"
+              className="flex items-center gap-1.5 px-3.5 sm:px-4 py-2 rounded-full bg-surface-elevated hover:bg-cyan-500/10 border border-outline-variant hover:border-cyan-400/50 text-on-surface hover:text-cyan-600 dark:hover:text-cyan-300 font-headline text-xs font-bold transition-all shadow-sm cursor-pointer"
             >
-              <span className="material-symbols-outlined text-cyan-400 text-sm font-bold">add</span>
+              <span className="material-symbols-outlined text-cyan-600 dark:text-cyan-400 text-sm font-bold">add</span>
               <span className="hidden sm:inline">CREATE</span>
             </button>
 
@@ -119,46 +119,46 @@ export const Navbar: React.FC<NavbarProps> = ({
                 <div className="absolute right-0 mt-3 w-60 glass-dropdown rounded-3xl p-2.5 z-50 animate-fadeIn font-headline text-xs font-bold">
                   <button
                     onClick={() => { setShowCreateMenu(false); onOpenAddStudent(); }}
-                    className="w-full flex items-center gap-3 p-3 rounded-2xl hover:bg-cyan-500/10 text-on-surface text-left transition-colors group"
+                    className="w-full flex items-center gap-3 p-3 rounded-2xl hover:bg-cyan-500/10 text-on-surface text-left transition-colors group cursor-pointer"
                   >
-                    <span className="material-symbols-outlined text-cyan-400 text-xl group-hover:scale-110 transition-transform">
+                    <span className="material-symbols-outlined text-cyan-600 dark:text-cyan-400 text-xl group-hover:scale-110 transition-transform">
                       person_add
                     </span>
                     <div>
-                      <span className="block text-on-surface group-hover:text-cyan-300">+ Talent Profile</span>
+                      <span className="block text-on-surface group-hover:text-cyan-600 dark:group-hover:text-cyan-300">+ Talent Profile</span>
                       <span className="block text-[10px] font-normal text-on-surface-variant">Add yourself to matrix</span>
                     </div>
                   </button>
 
                   <button
                     onClick={() => { setShowCreateMenu(false); onOpenAddProject(); }}
-                    className="w-full flex items-center gap-3 p-3 rounded-2xl hover:bg-violet-500/10 text-on-surface text-left transition-colors group"
+                    className="w-full flex items-center gap-3 p-3 rounded-2xl hover:bg-violet-500/10 text-on-surface text-left transition-colors group cursor-pointer"
                   >
-                    <span className="material-symbols-outlined text-violet-400 text-xl group-hover:scale-110 transition-transform">
+                    <span className="material-symbols-outlined text-violet-600 dark:text-violet-400 text-xl group-hover:scale-110 transition-transform">
                       rocket_launch
                     </span>
                     <div>
-                      <span className="block text-on-surface group-hover:text-violet-300">+ Project Brief</span>
+                      <span className="block text-on-surface group-hover:text-violet-600 dark:group-hover:text-violet-300">+ Project Brief</span>
                       <span className="block text-[10px] font-normal text-on-surface-variant">Index project requirements</span>
                     </div>
                   </button>
 
                   <button
                     onClick={() => { setShowCreateMenu(false); onOpenAddDepartment(); }}
-                    className="w-full flex items-center gap-3 p-3 rounded-2xl hover:bg-mint-500/10 text-on-surface text-left transition-colors group"
+                    className="w-full flex items-center gap-3 p-3 rounded-2xl hover:bg-emerald-500/10 text-on-surface text-left transition-colors group cursor-pointer"
                   >
-                    <span className="material-symbols-outlined text-mint-accent text-xl group-hover:scale-110 transition-transform">
+                    <span className="material-symbols-outlined text-emerald-600 dark:text-mint-accent text-xl group-hover:scale-110 transition-transform">
                       domain
                     </span>
                     <div>
-                      <span className="block text-on-surface group-hover:text-mint-accent">+ Department</span>
+                      <span className="block text-on-surface group-hover:text-emerald-600 dark:group-hover:text-mint-accent">+ Department</span>
                       <span className="block text-[10px] font-normal text-on-surface-variant">Register academic lab</span>
                     </div>
                   </button>
 
                   <button
                     onClick={() => { setShowCreateMenu(false); onOpenAddCampus(); }}
-                    className="w-full flex items-center gap-3 p-3 rounded-2xl hover:bg-white/[0.06] text-on-surface text-left transition-colors group"
+                    className="w-full flex items-center gap-3 p-3 rounded-2xl hover:bg-slate-500/10 text-on-surface text-left transition-colors group cursor-pointer"
                   >
                     <span className="material-symbols-outlined text-on-surface-variant text-xl group-hover:scale-110 transition-transform">
                       apartment
@@ -176,7 +176,7 @@ export const Navbar: React.FC<NavbarProps> = ({
           {/* Theme Switcher */}
           <button
             onClick={cycleTheme}
-            className="p-2 rounded-full bg-white/[0.04] hover:bg-white/[0.08] border border-outline-variant text-on-surface-variant hover:text-cyan-400 transition-colors"
+            className="p-2 rounded-full bg-surface-elevated hover:bg-slate-900/5 dark:hover:bg-white/[0.08] border border-outline-variant text-on-surface-variant hover:text-cyan-600 dark:hover:text-cyan-400 transition-colors cursor-pointer"
             title={`Current theme: ${theme.toUpperCase()} (Click to toggle)`}
           >
             {theme === 'dark' ? (
@@ -193,7 +193,7 @@ export const Navbar: React.FC<NavbarProps> = ({
             <div className="relative">
               <button
                 onClick={() => setShowProfileMenu(!showProfileMenu)}
-                className="relative w-9 h-9 rounded-full overflow-hidden border border-cyan-400/50 hover:border-cyan-400 hover:scale-105 transition-all shadow-cyan-glow flex-shrink-0"
+                className="relative w-9 h-9 rounded-full overflow-hidden border-2 border-cyan-400/60 hover:border-cyan-400 hover:scale-105 transition-all shadow-cyan-glow flex-shrink-0 cursor-pointer bg-surface"
                 title={`${user.fullName} (${user.email})`}
               >
                 <img
@@ -201,7 +201,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                   alt={user.fullName}
                   className="w-full h-full object-cover"
                 />
-                <span className="absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full bg-mint-accent border border-space-black" />
+                <span className="absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full bg-emerald-500 dark:bg-mint-accent border border-surface" />
               </button>
 
               {showProfileMenu && (
@@ -210,33 +210,34 @@ export const Navbar: React.FC<NavbarProps> = ({
                     className="fixed inset-0 z-40" 
                     onClick={() => setShowProfileMenu(false)}
                   />
-                  <div className="absolute right-0 mt-3 w-56 glass-dropdown rounded-3xl p-2.5 z-50 animate-fadeIn font-headline text-xs font-bold">
-                    <div className="px-3 py-2 border-b border-outline-variant/40 mb-1">
+                  <div className="absolute right-0 mt-3 w-60 glass-dropdown rounded-3xl p-2.5 z-50 animate-fadeIn font-headline text-xs font-bold shadow-2xl">
+                    <div className="px-3 py-2.5 border-b border-outline-variant mb-1">
                       <span className="block text-on-surface font-extrabold truncate">{user.fullName}</span>
-                      <span className="block text-[10px] text-on-surface-variant font-normal truncate">{user.email}</span>
+                      <span className="block text-[10px] text-cyan-600 dark:text-cyan-400 font-bold truncate">{user.role || 'Student Technologist'}</span>
+                      <span className="block text-[10px] text-on-surface-variant font-normal truncate mt-0.5">{user.email}</span>
                     </div>
 
                     <button
-                      onClick={() => { setShowProfileMenu(false); onOpenAddStudent(); }}
-                      className="w-full flex items-center gap-2.5 p-2.5 rounded-2xl hover:bg-white/[0.06] text-on-surface text-left"
+                      onClick={() => { setShowProfileMenu(false); onNavigateAuth?.('profile'); }}
+                      className="w-full flex items-center gap-2.5 p-2.5 rounded-2xl hover:bg-cyan-500/10 text-on-surface text-left cursor-pointer"
                     >
-                      <span className="material-symbols-outlined text-cyan-400 text-base">badge</span>
+                      <span className="material-symbols-outlined text-cyan-600 dark:text-cyan-400 text-base">person</span>
                       <span>Edit My Profile</span>
                     </button>
 
                     <button
                       onClick={() => { setShowProfileMenu(false); onOpenAdmin(); }}
-                      className="w-full flex items-center gap-2.5 p-2.5 rounded-2xl hover:bg-white/[0.06] text-on-surface text-left"
+                      className="w-full flex items-center gap-2.5 p-2.5 rounded-2xl hover:bg-violet-500/10 text-on-surface text-left cursor-pointer"
                     >
-                      <span className="material-symbols-outlined text-violet-400 text-base">monitoring</span>
+                      <span className="material-symbols-outlined text-violet-600 dark:text-violet-400 text-base">monitoring</span>
                       <span>Admin & Telemetry</span>
                     </button>
 
-                    <div className="my-1 border-t border-outline-variant/30" />
+                    <div className="my-1 border-t border-outline-variant" />
 
                     <button
                       onClick={() => { setShowProfileMenu(false); logout(); }}
-                      className="w-full flex items-center gap-2.5 p-2.5 rounded-2xl hover:bg-error-container text-error text-left"
+                      className="w-full flex items-center gap-2.5 p-2.5 rounded-2xl hover:bg-error-container text-error text-left cursor-pointer"
                     >
                       <span className="material-symbols-outlined text-base">logout</span>
                       <span>Sign Out</span>
@@ -248,7 +249,7 @@ export const Navbar: React.FC<NavbarProps> = ({
           ) : (
             <button
               onClick={() => onNavigateAuth?.('login')}
-              className="px-4 py-2 rounded-full bg-gradient-to-r from-cyan-500 to-violet-600 hover:from-cyan-400 hover:to-violet-500 text-space-black font-headline text-xs font-extrabold shadow-cyan-glow hover:scale-105 active:scale-95 transition-all flex items-center gap-1.5"
+              className="px-4 py-2 rounded-full bg-gradient-to-r from-cyan-500 to-violet-600 hover:from-cyan-400 hover:to-violet-500 text-space-black font-headline text-xs font-extrabold shadow-cyan-glow hover:scale-105 active:scale-95 transition-all flex items-center gap-1.5 cursor-pointer"
             >
               <span className="material-symbols-outlined text-sm">login</span>
               <span>SIGN IN</span>
@@ -258,7 +259,7 @@ export const Navbar: React.FC<NavbarProps> = ({
           {/* Mobile Menu Trigger */}
           <button
             onClick={() => setShowMobileNav(!showMobileNav)}
-            className="lg:hidden p-2 rounded-xl text-on-surface hover:bg-white/[0.06]"
+            className="lg:hidden p-2 rounded-xl text-on-surface hover:bg-slate-900/5 dark:hover:bg-white/[0.06] cursor-pointer"
           >
             <span className="material-symbols-outlined">menu</span>
           </button>
@@ -277,21 +278,32 @@ export const Navbar: React.FC<NavbarProps> = ({
               }}
               className={`w-full text-left p-3 rounded-2xl flex items-center gap-2.5 ${
                 activeTab === item.id
-                  ? 'bg-cyan-500/15 text-cyan-300 border border-cyan-400/30'
-                  : 'text-on-surface hover:bg-white/[0.04]'
+                  ? 'bg-gradient-to-r from-sky-500/20 to-violet-500/20 dark:from-cyan-500/25 dark:to-violet-500/25 text-slate-900 dark:text-cyan-300 border border-sky-500/50 dark:border-cyan-400/30'
+                  : 'text-on-surface hover:bg-slate-900/5 dark:hover:bg-white/[0.04]'
               }`}
             >
               <span className="material-symbols-outlined text-base">{item.icon}</span>
               <span>{item.label}</span>
             </button>
           ))}
-          {!isAuthenticated && (
+          {isAuthenticated ? (
+            <button
+              onClick={() => {
+                setShowMobileNav(false);
+                onNavigateAuth?.('profile');
+              }}
+              className="w-full text-left p-3 rounded-2xl flex items-center gap-2.5 text-cyan-600 dark:text-cyan-400 font-extrabold border-t border-outline-variant mt-2"
+            >
+              <span className="material-symbols-outlined text-base">person</span>
+              <span>My Profile ({user?.fullName})</span>
+            </button>
+          ) : (
             <button
               onClick={() => {
                 setShowMobileNav(false);
                 onNavigateAuth?.('login');
               }}
-              className="w-full text-left p-3 rounded-2xl flex items-center gap-2.5 text-cyan-400 font-extrabold border-t border-outline-variant/40 mt-2"
+              className="w-full text-left p-3 rounded-2xl flex items-center gap-2.5 text-cyan-600 dark:text-cyan-400 font-extrabold border-t border-outline-variant mt-2"
             >
               <span className="material-symbols-outlined text-base">login</span>
               <span>Sign In to ProjectMatch</span>

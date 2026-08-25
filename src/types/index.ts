@@ -264,7 +264,7 @@ export interface CampusNetworkLink {
 }
 
 /* ==========================================================
-   AUTHENTICATION INTERFACES (Supabase Ready)
+   AUTHENTICATION & PROFILE INTERFACES (Supabase Powered)
    ========================================================== */
 
 export interface AuthUser {
@@ -277,8 +277,50 @@ export interface AuthUser {
   role?: string;
   department?: string;
   campus?: string;
+  githubUrl?: string;
+  linkedinUrl?: string;
+  portfolioUrl?: string;
+  resumeUrl?: string;
+  bio?: string;
+  skills?: StudentSkill[];
+  availabilityHours?: number;
   emailVerified: boolean;
   createdAt: string;
+  updatedAt?: string;
+}
+
+export interface ProfileRecord {
+  id: string;
+  full_name: string | null;
+  email: string | null;
+  department: string | null;
+  campus: string | null;
+  role?: string | null;
+  avatar_url: string | null;
+  github_url?: string | null;
+  linkedin_url?: string | null;
+  portfolio_url?: string | null;
+  resume_url?: string | null;
+  bio?: string | null;
+  skills?: any;
+  availability_hours?: number;
+  created_at?: string;
+  updated_at?: string;
+}
+
+export interface ProfileUpdatePayload {
+  fullName?: string;
+  department?: string;
+  campus?: string;
+  role?: string;
+  avatarUrl?: string;
+  githubUrl?: string;
+  linkedinUrl?: string;
+  portfolioUrl?: string;
+  resumeUrl?: string;
+  bio?: string;
+  skills?: StudentSkill[];
+  availabilityHours?: number;
 }
 
 export interface AuthState {

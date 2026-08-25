@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useAuth } from '../../context/AuthContext';
+import { useData } from '../../context/DataContext';
 import { AuthLayout } from './AuthLayout';
 
 interface SignUpPageProps {
@@ -8,10 +9,14 @@ interface SignUpPageProps {
 
 export const SignUpPage: React.FC<SignUpPageProps> = ({ onNavigate }) => {
   const { signup, loginWithOAuth, isLoading, error, clearError } = useAuth();
+  const { departments, campuses } = useData();
+
   const [fullName, setFullName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  const [department, setDepartment] = useState(departments[0]?.name || 'Computer Science & Engineering');
+  const [campus, setCampus] = useState(campuses[0]?.name || 'Main Campus (Kattankulathur)');
   const [localError, setLocalError] = useState<string | null>(null);
 
   // Password Strength Criteria
@@ -35,7 +40,7 @@ export const SignUpPage: React.FC<SignUpPageProps> = ({ onNavigate }) => {
       return;
     }
     if (strengthScore < 3) {
-      setLocalError('Please meet the password strength requirements.');
+      setLocalError('Please meet the password strength requirements (at least 8 chars, 1 uppercase, 1 lowercase, 1 number).');
       return;
     }
     if (password !== confirmPassword) {
@@ -43,7 +48,7 @@ export const SignUpPage: React.FC<SignUpPageProps> = ({ onNavigate }) => {
       return;
     }
 
-    const success = await signup(fullName, email, password);
+    const success = await signup(fullName, email, password, department, campus);
     if (success) {
       onNavigate('verify-email');
     }
@@ -52,10 +57,7 @@ export const SignUpPage: React.FC<SignUpPageProps> = ({ onNavigate }) => {
   const handleOAuth = async (provider: 'google' | 'github') => {
     setLocalError(null);
     clearError();
-    const success = await loginWithOAuth(provider);
-    if (success) {
-      onNavigate('verify-email');
-    }
+    await loginWithOAuth(provider);
   };
 
   const displayError = localError || error;
@@ -161,6 +163,59 @@ export const SignUpPage: React.FC<SignUpPageProps> = ({ onNavigate }) => {
                 className="w-full h-12 pl-10 pr-4 rounded-2xl glass-input text-xs font-headline text-on-surface placeholder:text-on-surface-variant/50"
                 required
               />
+            </div>
+          </div>
+
+          {/* Department and Campus Selectors */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div className="space-y-1">
+              <label className="block text-xs font-headline font-bold text-on-surface">
+                Department
+              </label>
+              <div className="relative">
+                <span className="material-symbols-outlined absolute left-3.5 top-1/2 -translate-y-1/2 text-on-surface-variant text-sm pointer-events-none">
+                  domain
+                </span>
+                <select
+                  value={department}
+                  onChange={e => setDepartment(e.target.value)}
+                  className="w-full h-12 pl-10 pr-8 rounded-2xl glass-input text-xs font-headline text-on-surface appearance-none bg-surface-container/60 cursor-pointer"
+                >
+                  {departments.map(d => (
+                    <option key={d.id} value={d.name} className="bg-surface text-on-surface">
+                      {d.name.split('-')[0]}
+                    </option>
+                  ))}
+                </select>
+                <span className="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-sm pointer-events-none">
+                  arrow_drop_down
+                </span>
+              </div>
+            </div>
+
+            <div className="space-y-1">
+              <label className="block text-xs font-headline font-bold text-on-surface">
+                Campus Location
+              </label>
+              <div className="relative">
+                <span className="material-symbols-outlined absolute left-3.5 top-1/2 -translate-y-1/2 text-on-surface-variant text-sm pointer-events-none">
+                  apartment
+                </span>
+                <select
+                  value={campus}
+                  onChange={e => setCampus(e.target.value)}
+                  className="w-full h-12 pl-10 pr-8 rounded-2xl glass-input text-xs font-headline text-on-surface appearance-none bg-surface-container/60 cursor-pointer"
+                >
+                  {campuses.map(c => (
+                    <option key={c.id} value={c.name} className="bg-surface text-on-surface">
+                      {c.name.split('(')[0]}
+                    </option>
+                  ))}
+                </select>
+                <span className="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-sm pointer-events-none">
+                  arrow_drop_down
+                </span>
+              </div>
             </div>
           </div>
 

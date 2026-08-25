@@ -10,6 +10,7 @@ import { TalentMatrixView } from './components/talent/TalentMatrixView';
 import { ProjectArchiveView } from './components/projects/ProjectArchiveView';
 import { CampusCommandCenter } from './components/campus/CampusCommandCenter';
 import { HowItWorksView } from './components/howitworks/HowItWorksView';
+import { ProfilePage } from './components/profile/ProfilePage';
 import { StudentModal } from './components/talent/StudentModal';
 import { MultiStepProfileModal } from './components/modals/MultiStepProfileModal';
 import { ProjectFormModal } from './components/modals/ProjectFormModal';
@@ -28,11 +29,22 @@ import { recommendTeamAI } from './services/aiService';
 import { Student, ProjectArchetype, Department, Campus, TeamArchitectResult } from './types';
 import { playChime, playSuccess, playWhoosh } from './utils/sound';
 
-type AppRoute = 'architect' | 'talent' | 'projects' | 'campus' | 'how-it-works' | 'login' | 'signup' | 'forgot-password' | 'reset-password' | 'verify-email';
+type AppRoute =
+  | 'architect'
+  | 'talent'
+  | 'projects'
+  | 'campus'
+  | 'how-it-works'
+  | 'profile'
+  | 'login'
+  | 'signup'
+  | 'forgot-password'
+  | 'reset-password'
+  | 'verify-email';
 
 const MainApp: React.FC = () => {
-  const { students, projects } = useData();
-  const { isAuthenticated } = useAuth();
+  const { students, projects, updateStudent, addStudent } = useData();
+  const { user, isAuthenticated } = useAuth();
 
   // Route state initialized from pathname
   const [currentRoute, setCurrentRoute] = useState<AppRoute>(() => {
@@ -42,6 +54,7 @@ const MainApp: React.FC = () => {
     if (path === 'forgot-password') return 'forgot-password';
     if (path === 'reset-password') return 'reset-password';
     if (path === 'verify-email') return 'verify-email';
+    if (path === 'profile') return 'profile';
     if (path === 'talent') return 'talent';
     if (path === 'projects') return 'projects';
     if (path === 'campus') return 'campus';
@@ -60,7 +73,18 @@ const MainApp: React.FC = () => {
   useEffect(() => {
     const handlePopState = () => {
       const path = window.location.pathname.replace(/^\//, '').toLowerCase();
-      if (path === 'login' || path === 'signup' || path === 'forgot-password' || path === 'reset-password' || path === 'verify-email' || path === 'talent' || path === 'projects' || path === 'campus' || path === 'how-it-works') {
+      if (
+        path === 'login' ||
+        path === 'signup' ||
+        path === 'forgot-password' ||
+        path === 'reset-password' ||
+        path === 'verify-email' ||
+        path === 'profile' ||
+        path === 'talent' ||
+        path === 'projects' ||
+        path === 'campus' ||
+        path === 'how-it-works'
+      ) {
         setCurrentRoute(path as AppRoute);
       } else {
         setCurrentRoute('architect');
@@ -69,6 +93,28 @@ const MainApp: React.FC = () => {
     window.addEventListener('popstate', handlePopState);
     return () => window.removeEventListener('popstate', handlePopState);
   }, []);
+
+  // Sync authenticated user into the talent pool as a verified user profile
+  useEffect(() => {
+    if (user && user.id) {
+      const existing = students.find(s => s.id === user.id || s.contactEmail === user.email);
+      if (existing) {
+        // Update with latest user attributes
+        updateStudent(existing.id, {
+          name: user.fullName || existing.name,
+          role: user.role || existing.role,
+          department: user.department || existing.department,
+          campus: user.campus || existing.campus,
+          avatarUrl: user.avatarUrl,
+          bio: user.bio || existing.bio,
+          skills: user.skills && user.skills.length > 0 ? user.skills : existing.skills,
+          availabilityHours: user.availabilityHours || existing.availabilityHours,
+          isUserCreated: true,
+          isSyntheticDemo: false
+        });
+      }
+    }
+  }, [user]);
 
   const [prompt, setPrompt] = useState(
     "We're building an AI platform that detects ocean pollution using satellite and environmental data."
@@ -170,7 +216,14 @@ const MainApp: React.FC = () => {
           <Navbar
             activeTab={currentRoute as any}
             setActiveTab={t => navigateTo(t)}
-            onOpenAddStudent={() => { setEditingStudent(null); setIsStudentFormOpen(true); }}
+            onOpenAddStudent={() => {
+              if (!isAuthenticated) {
+                navigateTo('login');
+              } else {
+                setEditingStudent(null);
+                setIsStudentFormOpen(true);
+              }
+            }}
             onOpenAddProject={() => { setEditingProject(null); setIsProjectFormOpen(true); }}
             onOpenAddDepartment={() => { setEditingDept(null); setIsDeptFormOpen(true); }}
             onOpenAddCampus={() => { setEditingCampus(null); setIsCampusFormOpen(true); }}
@@ -237,7 +290,14 @@ const MainApp: React.FC = () => {
 
             {currentRoute === 'talent' && (
               <TalentMatrixView
-                onOpenAddStudent={() => { setEditingStudent(null); setIsStudentFormOpen(true); }}
+                onOpenAddStudent={() => {
+                  if (!isAuthenticated) {
+                    navigateTo('login');
+                  } else {
+                    setEditingStudent(null);
+                    setIsStudentFormOpen(true);
+                  }
+                }}
                 onOpenAddProject={() => { setEditingProject(null); setIsProjectFormOpen(true); }}
                 onEditStudent={s => { setEditingStudent(s); setIsStudentFormOpen(true); }}
                 onNavigateToArchitect={() => navigateTo('architect')}
@@ -265,6 +325,13 @@ const MainApp: React.FC = () => {
             {currentRoute === 'how-it-works' && (
               <HowItWorksView />
             )}
+
+            {currentRoute === 'profile' && (
+              <ProfilePage
+                onNavigateToTalent={() => navigateTo('talent')}
+                onNavigateToLogin={() => navigateTo('login')}
+              />
+            )}
           </main>
 
           {/* Footer */}
@@ -272,11 +339,12 @@ const MainApp: React.FC = () => {
         </>
       )}
 
-      {/* Global Modals */}
+      {/* Modals */}
       <StudentModal
         student={studentModalTarget}
         onClose={() => setStudentModalTarget(null)}
         onEditStudent={s => {
+          setStudentModalTarget(null);
           setEditingStudent(s);
           setIsStudentFormOpen(true);
         }}
@@ -284,41 +352,53 @@ const MainApp: React.FC = () => {
 
       <MultiStepProfileModal
         isOpen={isStudentFormOpen}
-        onClose={() => { setIsStudentFormOpen(false); setEditingStudent(null); }}
         initialStudent={editingStudent}
+        onClose={() => {
+          setIsStudentFormOpen(false);
+          setEditingStudent(null);
+        }}
       />
 
       <ProjectFormModal
         isOpen={isProjectFormOpen}
-        onClose={() => { setIsProjectFormOpen(false); setEditingProject(null); }}
         initialProject={editingProject}
+        onClose={() => {
+          setIsProjectFormOpen(false);
+          setEditingProject(null);
+        }}
       />
 
       <DepartmentModal
         isOpen={isDeptFormOpen}
-        onClose={() => { setIsDeptFormOpen(false); setEditingDept(null); }}
         initialDepartment={editingDept}
+        onClose={() => {
+          setIsDeptFormOpen(false);
+          setEditingDept(null);
+        }}
       />
 
       <CampusModal
         isOpen={isCampusFormOpen}
-        onClose={() => { setIsCampusFormOpen(false); setEditingCampus(null); }}
         initialCampus={editingCampus}
+        onClose={() => {
+          setIsCampusFormOpen(false);
+          setEditingCampus(null);
+        }}
       />
 
       <AdminControlModal
         isOpen={isAdminOpen}
         onClose={() => setIsAdminOpen(false)}
-        onOpenAddStudent={() => { setEditingStudent(null); setIsStudentFormOpen(true); }}
-        onOpenAddProject={() => { setEditingProject(null); setIsProjectFormOpen(true); }}
-        onOpenAddDepartment={() => { setEditingDept(null); setIsDeptFormOpen(true); }}
-        onOpenAddCampus={() => { setEditingCampus(null); setIsCampusFormOpen(true); }}
+        onOpenAddStudent={() => { setIsAdminOpen(false); setEditingStudent(null); setIsStudentFormOpen(true); }}
+        onOpenAddProject={() => { setIsAdminOpen(false); setEditingProject(null); setIsProjectFormOpen(true); }}
+        onOpenAddDepartment={() => { setIsAdminOpen(false); setEditingDept(null); setIsDeptFormOpen(true); }}
+        onOpenAddCampus={() => { setIsAdminOpen(false); setEditingCampus(null); setIsCampusFormOpen(true); }}
       />
     </div>
   );
 };
 
-export default function App() {
+export function App() {
   return (
     <DataProvider>
       <AuthProvider>
@@ -327,3 +407,5 @@ export default function App() {
     </DataProvider>
   );
 }
+
+export default App;
