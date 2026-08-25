@@ -132,6 +132,7 @@ export interface Student {
   };
   isUserCreated?: boolean;
   isSyntheticDemo?: boolean;
+  isDemo?: boolean;
 }
 
 export interface ProjectArchetype {

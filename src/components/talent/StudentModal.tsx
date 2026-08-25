@@ -230,7 +230,7 @@ export const StudentModal: React.FC<StudentModalProps> = ({
               </span>
             ) : (
               <span className="px-2 py-0.5 rounded-full bg-violet-500/15 border border-violet-400/30 text-violet-600 dark:text-violet-300 text-[9px] font-headline font-bold">
-                CAMPUS COMPATIBILITY ANALYSIS
+                DEMO ANALYSIS
               </span>
             )}
           </div>
